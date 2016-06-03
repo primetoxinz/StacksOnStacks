@@ -23,7 +23,6 @@ public class PartIngot extends Multipart {
     private static final float bx=1/4f,by=1/8f,bz=1/2f;
     public PartIngot() {}
 
-    @SuppressWarnings("WeakerAccess")
     public PartIngot(Ingot ingot, Vec3d vec) {
         this.ingot = ingot;
         this.x = vec.xCoord;
