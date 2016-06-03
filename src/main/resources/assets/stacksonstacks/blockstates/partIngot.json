@@ -5,5 +5,10 @@
       "particle": "minecraft:blocks/iron_block"
     },
     "model": "stacksonstacks:ingot"
+  },
+  "varients": {
+    "normal": [{}],
+    "inventory":[{}]
+
   }
 }

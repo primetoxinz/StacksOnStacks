@@ -14,8 +14,8 @@ import java.util.List;
 /**
  * Created by tyler on 5/28/16.
  */
-@SuppressWarnings("ALL")
-class PartIngot extends Multipart {
+
+public class PartIngot extends Multipart {
 
     private Ingot ingot;
 
@@ -24,7 +24,7 @@ class PartIngot extends Multipart {
     public PartIngot() {}
 
     @SuppressWarnings("WeakerAccess")
-    protected PartIngot(Ingot ingot, Vec3d vec) {
+    public PartIngot(Ingot ingot, Vec3d vec) {
         this.ingot = ingot;
         this.x = vec.xCoord;
         this.y = vec.yCoord;
