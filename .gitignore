@@ -31,5 +31,3 @@ run
 # gradle/wrapper/gradle-wrapper.properties
 
 /classes/
-
-src/main/resources/assets/stacksonstacks/textures/
