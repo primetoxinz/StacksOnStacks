@@ -1,0 +1,16 @@
+[
+{
+  "modid": "stacksonstacks",
+  "name": "Stacks On Stacks",
+  "description": "Adds Ingot Piles",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["primetoxinz"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
