@@ -25,9 +25,10 @@ public class SoS {
 
     @Mod.EventHandler
     public void pre(FMLPreInitializationEvent e) {
-
         MinecraftForge.EVENT_BUS.register(new IngotPlacer());
         MultipartRegistry.registerPart(PartIngot.class, "partIngot");
+        MinecraftForge.EVENT_BUS.register(proxy);
+
     }
     @Mod.EventHandler
     public void init(FMLInitializationEvent e) {

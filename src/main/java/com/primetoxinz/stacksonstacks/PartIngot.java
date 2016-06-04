@@ -1,91 +1,123 @@
 package com.primetoxinz.stacksonstacks;
 
+import mcmultipart.MCMultiPartMod;
 import mcmultipart.multipart.Multipart;
+import mcmultipart.multipart.MultipartHelper;
+import mcmultipart.raytrace.PartMOP;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
+import pl.asie.charset.lib.render.IRenderComparable;
+import pl.asie.charset.lib.utils.GenericExtendedProperty;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by tyler on 5/28/16.
  */
 
-public class PartIngot extends Multipart {
-
-    private Ingot ingot;
-
-    private double x,y,z;
-    private static final float bx=1/4f,by=1/8f,bz=1/2f;
+public class PartIngot extends Multipart implements IRenderComparable<PartIngot> {
+    public static final GenericExtendedProperty<PartIngot> PROPERTY = new GenericExtendedProperty<PartIngot>("part",PartIngot.class);
+    public IngotLocation location;
+    public IngotType type;
     public PartIngot() {}
 
-    public PartIngot(Ingot ingot, Vec3d vec) {
-        this.ingot = ingot;
-        this.x = vec.xCoord;
-        this.y = vec.yCoord;
-        this.z = vec.zCoord;
+    public PartIngot(IngotLocation location, IngotType type) {
+        this.location = location;
+        this.type = type;
     }
-
-    private AxisAlignedBB getBoundsFromPosition() {
-
-        return new AxisAlignedBB(bx*x, (by*y),bz*z,(bx*x)-bx, (by*y)+by, (bz*z)-bz);
-    }
-
     @Override
-    public void addSelectionBoxes(List<AxisAlignedBB> list) {
-        list.add(getBoundsFromPosition());
+    public BlockStateContainer createBlockState() {
+        return new ExtendedBlockState(MCMultiPartMod.multipart, new IProperty[0], new IUnlistedProperty[]{PROPERTY});
+    }
+    public AxisAlignedBB getBounds() {
+        if(location != null)
+            return location.getBounds();
+        return new AxisAlignedBB(0,0,0,1,1,1);
     }
 
     @Override
     public void addCollisionBoxes(AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
-        AxisAlignedBB box = getBoundsFromPosition();
+        AxisAlignedBB box = getBounds();
         if (box.intersectsWith(mask)) {
             list.add(box);
         }
     }
+    @Override
+    public void addSelectionBoxes(List<AxisAlignedBB> list) {
+        list.add(getBounds());
+    }
+
+    @Override
+    public ItemStack getPickBlock(EntityPlayer player, PartMOP hit) {
+        if(type != null && type.stack != null)
+            return type.stack;
+        return null;
+    }
 
     @Override
     public List<ItemStack> getDrops() {
-        ArrayList<ItemStack> list = new ArrayList<ItemStack>();
-        list.add(ingot.getItemStack());
-        return list;
+        if(type != null && type.stack != null)
+            return Arrays.asList(type.stack);
+        return Arrays.asList(new ItemStack(Blocks.DIRT));
+    }
+
+    @Override
+    public IBlockState getExtendedState(IBlockState state) {
+        return ((IExtendedBlockState) state).withProperty(PROPERTY, this);
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        NBTTagCompound compound = new NBTTagCompound();
+        if(location != null)
+            location.writeToNBT(tag);
 
-        compound.setDouble("x",x);
-        compound.setDouble("y",y);
-        compound.setDouble("z",z);
-        tag.setTag("position", compound);
+        if(type != null)
+            type.writeToNBT(tag);
+        else {
+            System.out.println("REMOVING NULL THING");
+            MultipartHelper.getPartContainer(getWorld(), getPos()).removePart(this);
+
+        }
         return tag;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        NBTTagCompound compound = tag.getCompoundTag("position");
-        this.x = compound.getDouble("x");
-        this.y = compound.getDouble("y");
-        this.z = compound.getDouble("z");
-    }
-
-    @Override
-    public void readUpdatePacket(PacketBuffer buf) {
-        x = buf.readDouble();
-        y = buf.readDouble();
-        z = buf.readDouble();
+        location = IngotLocation.readFromNBT(tag);
+        type = IngotType.readFromNBT(tag);
     }
 
     @Override
     public void writeUpdatePacket(PacketBuffer buf) {
-        buf.writeDouble(x);
-        buf.writeDouble(y);
-        buf.writeDouble(z);
+        if(location != null)
+            location.writeUpdatePacket(buf);
+    }
+
+    @Override
+    public void readUpdatePacket(PacketBuffer buf) {
+        location = IngotLocation.readUpdatePacket(buf);
+    }
+
+    @Override
+    public boolean renderEquals(PartIngot other) {
+        return false;
+    }
+
+    @Override
+    public int renderHashCode() {
+        return 0;
     }
 
 }

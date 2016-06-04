@@ -27,29 +27,20 @@ public class IngotPlacer {
         onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
     }
 
-    private Vec3d getPositionFromHit(Vec3d hit, BlockPos pos) {
-//        if(Math.abs(pos.getY()) > Math.abs(hit.yCoord))
-//            pos=pos.down(2);
+    private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos) {
         int x1 = Math.abs(pos.getX());
         int y1 = Math.abs(pos.getY());
         int z1 = Math.abs(pos.getZ());
-//        System.out.println("y:"+hit.yCoord+","+y1);
         double x2 = Math.abs(hit.xCoord)-x1;
         double y2 = Math.abs(hit.yCoord)-y1;
         double z2 = Math.abs(hit.zCoord)-z1;
-
         x2 = Math.ceil(x2*4d);
         y2 = Math.ceil(y2*8d);
         z2 = Math.ceil(z2*2d);
-
-        return new Vec3d(x2,y2,z2);
+        return new IngotLocation(x2,y2,z2);
     }
 
-    private Ingot getIngot(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.stackSize = 1;
-        return new Ingot(copy);
-    }
+
 
     private boolean canBeIngot(ItemStack stack) {
         int[] ids = OreDictionary.getOreIDs(stack);
@@ -67,7 +58,7 @@ public class IngotPlacer {
 
         if (!player.canPlayerEdit(pos, side, stack)) return false;
 
-        IMultipart part = new PartIngot(getIngot(stack),getPositionFromHit(hit,pos));
+        IMultipart part = new PartIngot(getPositionFromHit(hit,pos),new IngotType(stack));
 
         if (part != null && MultipartHelper.canAddPart(world, pos, part)) {
             if (!world.isRemote) MultipartHelper.addPart(world, pos, part);
