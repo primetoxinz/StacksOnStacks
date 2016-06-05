@@ -1,11 +1,9 @@
 package com.primetoxinz.stacksonstacks.render;
 
 import com.primetoxinz.stacksonstacks.PartIngot;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -19,28 +17,23 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     private TextureAtlasSprite texture;
     public static final RenderIngot INSTANCE = new RenderIngot();
     public RenderIngot() {
-        super(PartIngot.PROPERTY, TextureMap.LOCATION_MISSING_TEXTURE);
+        super(PartIngot.PROPERTY, new ResourceLocation("blocks/iron_block"));
         addDefaultBlockTransforms();
 
     }
 
     @Override
     public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
-        texture = Minecraft.getMinecraft().getTextureMapBlocks().registerSprite(new ResourceLocation("blocks/iron_block"));
-        TextureAtlasSprite ingotTexture;
-        if(ingot.type == null || ingot.type.stack == null)
-            ingotTexture = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(Items.IRON_INGOT);
-        else
-            ingotTexture = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(ingot.type.stack.getItem());
+        texture = RenderUtils.textureGetter.apply(new ResourceLocation("blocks/iron_block"));
+
         SimpleBakedModel model = new SimpleBakedModel(this);
         EnumFacing facing;
         Vector3f tf = ingot.location.getLocation();
+        int renderColor = ingot.type.getColor();
+        float hp = 1/4f;
+        float MX = (4*tf.x)-hp, MY = 2*(tf.y+1), MZ = (8*tf.z)-hp;
+        float mx = (4*(tf.x-1))+hp, my = 2*(tf.y), mz = (8*(tf.z-1))+hp;
 
-        int renderColorIngot = RenderUtils.getAverageColor(ingotTexture, RenderUtils.AveragingMode.FULL);
-        int renderColor = renderColorIngot == -1 ? renderColorIngot :
-                (0xFF000000 | (renderColorIngot & 0x00FF00) | ((renderColorIngot & 0xFF0000) >> 16) | ((renderColorIngot & 0x0000FF) << 16));
-        float MX = 4*tf.x, MY = 2*(tf.y+1), MZ = 8*tf.z;
-        float mx = 4*(tf.x-1), my = 2*(tf.y), mz = 8*(tf.z-1);
         Vector3f[] from = new Vector3f[]{
                 new Vector3f(mx,my,mz),
                 new Vector3f(mx,MY,mz),
@@ -60,14 +53,20 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
         for(int i = 0; i< 6;i++) {
             facing = EnumFacing.VALUES[i];
-            model.addQuad(facing, RenderUtils.bakeFace(from[i], to[i], facing, texture, renderColor));
-
+            model.addQuad(facing, RenderUtils.BAKERY.makeBakedQuad(from[i],to[i],renderColor,texture,facing, ModelRotation.X0_Y0, true));
+            model.addQuad(facing, RenderUtils.BAKERY.makeBakedQuad(from[i],to[i],renderColor,texture,facing.getOpposite(), ModelRotation.X0_Y0, true));
         }
+
 
         return model;
     }
 
     @Override
     public PartIngot fromItemStack(ItemStack stack) {  return null;
+    }
+
+    @Override
+    public TextureAtlasSprite getParticleTexture() {
+        return texture;
     }
 }

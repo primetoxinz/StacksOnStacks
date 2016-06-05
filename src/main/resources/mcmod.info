@@ -1,16 +1,18 @@
 [
 {
-  "modid": "stacksonstacks",
-  "name": "Stacks On Stacks",
-  "description": "Adds Ingot Piles",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["primetoxinz"],
-  "credits": "",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": []
+  "modid" : "substratum",
+  "name" : "Substratum",
+  "version" : "1.3.2.0",
+  "credits" : "",
+  "authors": [
+    "EXTER"
+  ],
+  "description": "Base resources and crafting materials.",
+  "url" : "https://github.com/EXTER7/Substratum",
+  "updateUrl" : "",
+  "logoFile" : "",
+  "parent" : "",
+  "screenshots": [
+  ]
 }
 ]

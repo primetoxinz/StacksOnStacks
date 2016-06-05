@@ -2,7 +2,6 @@ package com.primetoxinz.stacksonstacks;
 
 import mcmultipart.MCMultiPartMod;
 import mcmultipart.multipart.Multipart;
-import mcmultipart.multipart.MultipartHelper;
 import mcmultipart.raytrace.PartMOP;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
@@ -23,6 +22,8 @@ import pl.asie.charset.lib.utils.GenericExtendedProperty;
 import java.util.Arrays;
 import java.util.List;
 
+import static mcmultipart.multipart.MultipartHelper.getPartContainer;
+
 /**
  * Created by tyler on 5/28/16.
  */
@@ -37,6 +38,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         this.location = location;
         this.type = type;
     }
+
     @Override
     public BlockStateContainer createBlockState() {
         return new ExtendedBlockState(MCMultiPartMod.multipart, new IProperty[0], new IUnlistedProperty[]{PROPERTY});
@@ -61,8 +63,11 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     @Override
     public ItemStack getPickBlock(EntityPlayer player, PartMOP hit) {
-        if(type != null && type.stack != null)
-            return type.stack;
+        if(type != null && type.stack != null) {
+            ItemStack copy = type.stack.copy();
+            copy.stackSize = 64;
+            return copy;
+        }
         return null;
     }
 
@@ -87,7 +92,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
             type.writeToNBT(tag);
         else {
             System.out.println("REMOVING NULL THING");
-            MultipartHelper.getPartContainer(getWorld(), getPos()).removePart(this);
+            getPartContainer(getWorld(), getPos()).removePart(this);
 
         }
         return tag;
@@ -103,11 +108,14 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public void writeUpdatePacket(PacketBuffer buf) {
         if(location != null)
             location.writeUpdatePacket(buf);
+        if(type != null)
+            type.writeUpdatePacket(buf);
     }
 
     @Override
     public void readUpdatePacket(PacketBuffer buf) {
         location = IngotLocation.readUpdatePacket(buf);
+        type = IngotType.readUpdatePacket(buf);
     }
 
     @Override
@@ -119,5 +127,17 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public int renderHashCode() {
         return 0;
     }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        return getBounds();
+    }
+
+    @Override
+    public void harvest(EntityPlayer player, PartMOP hit) {
+        super.harvest(player,hit);
+    }
+
+
 
 }

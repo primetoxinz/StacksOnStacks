@@ -32,3 +32,7 @@ run
 
 /classes/
 /gradle/
+/src/main/java/exter/substratum/
+src/main/java/exter/
+src/main/resources/assets/stacksonstacks/textures/
+src/main/resources/assets/substratum/

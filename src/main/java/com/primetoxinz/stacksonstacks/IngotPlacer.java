@@ -24,7 +24,7 @@ public class IngotPlacer {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void placeIngot(PlayerInteractEvent.RightClickBlock e) {
-        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
+        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(),e.getPos(), e.getHand(),e.getFace(), e.getHitVec());
     }
 
     private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos) {
@@ -46,7 +46,6 @@ public class IngotPlacer {
         int[] ids = OreDictionary.getOreIDs(stack);
         for(int id: ids) {
             String name = OreDictionary.getOreName(id);
-            System.out.println(String.format("%s, %s",id,name));
             if(name.startsWith("ingot")) {
                 return true;
             }
@@ -82,9 +81,7 @@ public class IngotPlacer {
                                      Vec3d hit) {
         if(stack == null || !canBeIngot(stack))
             return EnumActionResult.FAIL;
-        double depth = ((hit.xCoord * 2 - 1) * side.getFrontOffsetX() + (hit.yCoord * 2 - 1) * side.getFrontOffsetY()
-                + (hit.zCoord * 2 - 1) * side.getFrontOffsetZ());
-        if (depth < 1 && place(world, pos, side, hit, stack, player)) return EnumActionResult.SUCCESS;
+        if (place(world, pos, side, hit, stack, player)) return EnumActionResult.SUCCESS;
         if (place(world, pos.offset(side), side.getOpposite(), hit, stack, player)) return EnumActionResult.SUCCESS;
         return EnumActionResult.PASS;
     }
