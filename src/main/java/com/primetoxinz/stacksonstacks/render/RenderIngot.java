@@ -19,7 +19,6 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     public RenderIngot() {
         super(PartIngot.PROPERTY, new ResourceLocation("blocks/iron_block"));
         addDefaultBlockTransforms();
-
     }
 
     @Override
@@ -56,7 +55,6 @@ public class RenderIngot extends ModelFactory<PartIngot> {
             model.addQuad(facing, RenderUtils.BAKERY.makeBakedQuad(from[i],to[i],renderColor,texture,facing, ModelRotation.X0_Y0, true));
             model.addQuad(facing, RenderUtils.BAKERY.makeBakedQuad(from[i],to[i],renderColor,texture,facing.getOpposite(), ModelRotation.X0_Y0, true));
         }
-
 
         return model;
     }

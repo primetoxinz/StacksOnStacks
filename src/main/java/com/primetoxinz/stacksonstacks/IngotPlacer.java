@@ -17,14 +17,11 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
-/**
- * Created by tyler on 5/28/16.
- */
 public class IngotPlacer {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void placeIngot(PlayerInteractEvent.RightClickBlock e) {
-        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(),e.getPos(), e.getHand(),e.getFace(), e.getHitVec());
+        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
     }
 
     private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos) {
@@ -46,6 +43,7 @@ public class IngotPlacer {
         int[] ids = OreDictionary.getOreIDs(stack);
         for(int id: ids) {
             String name = OreDictionary.getOreName(id);
+            System.out.println(String.format("%s, %s",id,name));
             if(name.startsWith("ingot")) {
                 return true;
             }
@@ -59,7 +57,7 @@ public class IngotPlacer {
 
         IMultipart part = new PartIngot(getPositionFromHit(hit,pos),new IngotType(stack));
 
-        if (part != null && MultipartHelper.canAddPart(world, pos, part)) {
+        if (MultipartHelper.canAddPart(world, pos, part)) {
             if (!world.isRemote) MultipartHelper.addPart(world, pos, part);
             consumeItem(stack);
 
@@ -78,10 +76,12 @@ public class IngotPlacer {
     }
 
     private EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side,
-                                     Vec3d hit) {
+                                       Vec3d hit) {
         if(stack == null || !canBeIngot(stack))
             return EnumActionResult.FAIL;
-        if (place(world, pos, side, hit, stack, player)) return EnumActionResult.SUCCESS;
+        double depth = ((hit.xCoord * 2 - 1) * side.getFrontOffsetX() + (hit.yCoord * 2 - 1) * side.getFrontOffsetY()
+                + (hit.zCoord * 2 - 1) * side.getFrontOffsetZ());
+        if (depth < 1 && place(world, pos, side, hit, stack, player)) return EnumActionResult.SUCCESS;
         if (place(world, pos.offset(side), side.getOpposite(), hit, stack, player)) return EnumActionResult.SUCCESS;
         return EnumActionResult.PASS;
     }
