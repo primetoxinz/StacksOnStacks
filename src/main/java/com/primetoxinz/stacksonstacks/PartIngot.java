@@ -1,18 +1,27 @@
 package com.primetoxinz.stacksonstacks;
 
 import mcmultipart.MCMultiPartMod;
+import mcmultipart.multipart.IMultipart;
+import mcmultipart.multipart.IMultipartContainer;
 import mcmultipart.multipart.Multipart;
+import mcmultipart.multipart.MultipartHelper;
 import mcmultipart.raytrace.PartMOP;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
@@ -46,7 +55,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public AxisAlignedBB getBounds() {
         if(location != null)
             return location.getBounds();
-        return new AxisAlignedBB(0,0,0,1,1,1);
+        return new AxisAlignedBB(0,0,0,8/16d,2/16d,4/16d);
     }
 
     @Override
@@ -93,7 +102,6 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         else {
             System.out.println("REMOVING NULL THING");
             getPartContainer(getWorld(), getPos()).removePart(this);
-
         }
         return tag;
     }
@@ -135,9 +143,53 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     @Override
     public void harvest(EntityPlayer player, PartMOP hit) {
-        super.harvest(player,hit);
+        if( player != null && player.isSneaking()) {
+            IMultipartContainer container = MultipartHelper.getPartContainer(getWorld(),getPos());
+            for(IMultipart part: container.getParts()) {
+                if (part instanceof PartIngot) {
+                    PartIngot ingot = (PartIngot) part;
+                    ingot.drop();
+                }
+            }
+        } else {
+            super.harvest(player,hit);
+        }
     }
 
+    public void drop() {
+        World world = getWorld();
+        BlockPos pos = getPos();
+        double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
 
+       if(!world.isRemote && world.getGameRules().getBoolean("doTileDrops")
+                && !world.restoringBlockSnapshots) {
+            for (ItemStack stack : getDrops()) {
+                EntityItem item = new EntityItem(world, x, y, z, stack);
+                item.setDefaultPickupDelay();
+                world.spawnEntityInWorld(item);
+            }
+        }
+        getContainer().removePart(this);
 
+    }
+
+    @Override
+    protected void notifyBlockUpdate() {
+        super.notifyBlockUpdate();
+    }
+
+    @Override
+    public void onNeighborBlockChange(Block block) {
+        super.onNeighborBlockChange(block);
+        World world = getWorld();
+        IBlockState down = world.getBlockState(getPos().down());
+        if(down.getMaterial() == Material.AIR) {
+            drop();
+        }
+    }
+
+    @Override
+    public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
+        return true;
+    }
 }

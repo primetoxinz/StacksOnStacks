@@ -22,17 +22,13 @@ import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.common.model.TRSRTransformation;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import pl.asie.charset.lib.utils.RenderUtils;
 
-import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 import java.util.EnumMap;
 
-public abstract class BaseBakedModel implements IPerspectiveAwareModel {
+public abstract class BaseBakedModel implements IBakedModel {
     private final EnumMap<ItemCameraTransforms.TransformType, TRSRTransformation> transformMap = new EnumMap(ItemCameraTransforms.TransformType.class);
     private final ResourceLocation particle;
 
@@ -44,11 +40,11 @@ public abstract class BaseBakedModel implements IPerspectiveAwareModel {
         this.particle = particle != null ? particle : TextureMap.LOCATION_MISSING_TEXTURE;
     }
 
-    @Override
-    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-        return ImmutablePair.of(this,
-                transformMap.containsKey(cameraTransformType) ? transformMap.get(cameraTransformType).getMatrix() : null);
-    }
+//    @Override
+//    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
+//        return ImmutablePair.of(this,
+//                transformMap.containsKey(cameraTransformType) ? transformMap.get(cameraTransformType).getMatrix() : null);
+//    }
 
     @Override
     public boolean isAmbientOcclusion() {

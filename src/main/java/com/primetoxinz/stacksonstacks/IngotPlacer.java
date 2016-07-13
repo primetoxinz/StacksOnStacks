@@ -1,49 +1,80 @@
 package com.primetoxinz.stacksonstacks;
 
+import mcmultipart.block.TileMultipartContainer;
 import mcmultipart.multipart.IMultipart;
+import mcmultipart.multipart.IMultipartContainer;
 import mcmultipart.multipart.MultipartHelper;
+import mcmultipart.multipart.MultipartRegistry;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
+import static mcmultipart.multipart.MultipartHelper.getPartContainer;
+import static net.minecraft.util.EnumActionResult.FAIL;
+import static net.minecraft.util.EnumActionResult.SUCCESS;
 
 public class IngotPlacer {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public void placeIngot(PlayerInteractEvent.RightClickBlock e) {
-        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
+    @SideOnly(Side.CLIENT)
+    public final void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
+        ItemStack main = event.getPlayer().getHeldItemMainhand();
+        ItemStack off = event.getPlayer().getHeldItemOffhand();
+        BlockPos pos = event.getTarget().getBlockPos();
+        EntityPlayer player = event.getPlayer();
+        float partialTicks = event.getPartialTicks();
+
+        if (canBeIngot(main) || canBeIngot(off)) {
+            drawSelectionBox(player, event.getTarget(), 0, partialTicks);
+        }
+    }
+
+    private double round(double num, double r) {
+        return ((int) (num * (int) (r))) / r;
     }
 
     private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos) {
-        int x1 = Math.abs(pos.getX());
-        int y1 = Math.abs(pos.getY());
-        int z1 = Math.abs(pos.getZ());
-        double x2 = Math.abs(hit.xCoord)-x1;
-        double y2 = Math.abs(hit.yCoord)-y1;
-        double z2 = Math.abs(hit.zCoord)-z1;
-        x2 = Math.ceil(x2*4d);
-        y2 = Math.ceil(y2*8d);
-        z2 = Math.ceil(z2*2d);
-        return new IngotLocation(x2,y2,z2);
+        double x = round(hit.xCoord, 2);
+        double y = round(hit.yCoord, 8);
+        double z = Math.abs(round(hit.zCoord, 4));
+        IngotLocation loc = new IngotLocation((x - ((int) x)), (y - ((int) y)), (z - ((int) z)));
+        return loc;
     }
 
-
-
     private boolean canBeIngot(ItemStack stack) {
+        if (stack == null)
+            return false;
+
         int[] ids = OreDictionary.getOreIDs(stack);
         for(int id: ids) {
             String name = OreDictionary.getOreName(id);
-            System.out.println(String.format("%s, %s",id,name));
             if(name.startsWith("ingot")) {
                 return true;
             }
@@ -51,38 +82,121 @@ public class IngotPlacer {
         return  stack.getUnlocalizedName().contains("ingot");
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void placeIngot(PlayerInteractEvent.RightClickBlock e) {
+        if (e.getSide().isClient())
+            return;
+        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
+    }
+
+    public boolean canAddPart(World world, BlockPos pos, IMultipart part) {
+        IMultipartContainer container = getPartContainer(world, pos);
+        PartIngot ingot = (PartIngot) part;
+        if (container == null) {
+            List<AxisAlignedBB> list = new ArrayList<AxisAlignedBB>();
+            ingot.addCollisionBoxes(ingot.getBounds(), list, null);
+            for (AxisAlignedBB bb : list)
+                if (!world.checkNoEntityCollision(bb.offset(pos.getX(), pos.getY(), pos.getZ()))) return false;
+
+            Collection<? extends IMultipart> parts = MultipartRegistry.convert(world, pos, true);
+            if (parts != null && !parts.isEmpty()) {
+                TileMultipartContainer tmp = new TileMultipartContainer();
+                for (IMultipart p : parts)
+                    tmp.getPartContainer().addPart(p, false, false, false, false, UUID.randomUUID());
+                return tmp.canAddPart(part);
+            }
+
+            return true;
+        }
+        return container.canAddPart(part);
+
+    }
+
+    private EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
+
+        if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
+            if (place(world, pos, side, hit, stack, player))
+                if (!player.isCreative()) consumeItem(stack);
+            return SUCCESS;
+        }
+        return FAIL;
+    }
+
+
     private boolean place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
+        if (MultipartHelper.getPartContainer(world, pos) == null) {
+            if(side != EnumFacing.UP)
+                return false;
+            pos = pos.offset(side);
+        }
+        IngotLocation location = getPositionFromHit(hit, pos);
+        IMultipart part = new PartIngot(location, new IngotType(stack));
 
-        if (!player.canPlayerEdit(pos, side, stack)) return false;
 
-        IMultipart part = new PartIngot(getPositionFromHit(hit,pos),new IngotType(stack));
-
-        if (MultipartHelper.canAddPart(world, pos, part)) {
-            if (!world.isRemote) MultipartHelper.addPart(world, pos, part);
-            consumeItem(stack);
+        if (location.isValidLocation() && canAddPart(world, pos, part)) {
+            if (!world.isRemote) {
+                MultipartHelper.addPart(world, pos, part);
+            }
 
             SoundType sound = SoundType.METAL;
             if (sound != null)
                 world.playSound(player, pos, sound.getPlaceSound(), SoundCategory.BLOCKS, sound.getVolume(), sound.getPitch());
-
             return true;
         }
-
         return false;
+
     }
 
     private void consumeItem(ItemStack stack) {
         stack.stackSize--;
     }
 
-    private EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side,
-                                       Vec3d hit) {
-        if(stack == null || !canBeIngot(stack))
-            return EnumActionResult.FAIL;
-        double depth = ((hit.xCoord * 2 - 1) * side.getFrontOffsetX() + (hit.yCoord * 2 - 1) * side.getFrontOffsetY()
-                + (hit.zCoord * 2 - 1) * side.getFrontOffsetZ());
-        if (depth < 1 && place(world, pos, side, hit, stack, player)) return EnumActionResult.SUCCESS;
-        if (place(world, pos.offset(side), side.getOpposite(), hit, stack, player)) return EnumActionResult.SUCCESS;
-        return EnumActionResult.PASS;
+    public static void drawSelectionBox(EntityPlayer player, RayTraceResult movingObjectPositionIn, int execute, float partialTicks) {
+        World world = player.getEntityWorld();
+        if (execute == 0 && movingObjectPositionIn.typeOfHit == RayTraceResult.Type.BLOCK) {
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+            GlStateManager.color(0.0F, 0.0F, 0.0F, 0.4F);
+            GlStateManager.glLineWidth(2.0F);
+            GlStateManager.disableTexture2D();
+            GlStateManager.depthMask(false);
+            BlockPos pos = movingObjectPositionIn.getBlockPos();
+            IBlockState state = world.getBlockState(pos);
+
+            if (state.getMaterial() != Material.AIR && world.getWorldBorder().contains(pos)) {
+                double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
+                double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
+                double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
+                AxisAlignedBB block = state.getSelectedBoundingBox(world, pos);
+                double x = pos.getX(), y = (block.maxY), z = pos.getZ();
+
+                AxisAlignedBB box;
+                for (int i = 1; i <= 4; i++) {
+                    box = new AxisAlignedBB(x, y, z + (i / 4d) - .25, x + .5, y, z + (i / 4d)).expandXyz(.002d).offset(-d0, -d1, -d2);
+                    drawLine(box);
+                }
+                for (int i = 1; i <= 4; i++) {
+                    box = new AxisAlignedBB(x + .5, y, z + (i / 4d) - .25, x + 1, y, z + (i / 4d)).expandXyz(.002d).offset(-d0, -d1, -d2);
+                    drawLine(box);
+                }
+
+            }
+            GlStateManager.depthMask(true);
+            GlStateManager.enableTexture2D();
+            GlStateManager.disableBlend();
+        }
     }
+
+    public static void drawLine(AxisAlignedBB boundingBox) {
+        Tessellator tessellator = Tessellator.getInstance();
+        VertexBuffer vertexbuffer = tessellator.getBuffer();
+        vertexbuffer.begin(3, DefaultVertexFormats.POSITION);
+        vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).endVertex();
+        vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).endVertex();
+        vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).endVertex();
+        vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).endVertex();
+        vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).endVertex();
+        tessellator.draw();
+    }
+
 }

@@ -9,21 +9,23 @@ import org.lwjgl.util.vector.Vector3f;
  * Created by tyler on 6/4/16.
  */
 public class IngotLocation {
-    //TODO fix
-    private static final double MX=4, MY=8, MZ=2,bx=1/MX,by=1/MY,bz=1/MZ;
-    private float x,y,z;
+    protected float x, y, z;
 
     public IngotLocation(float x, float y,float z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
+
     public IngotLocation(double x, double y,double z) {
         this((float)x,(float)y,(float)z);
     }
+
     public AxisAlignedBB getBounds() {
-        return new AxisAlignedBB(bx*x, (by*y),bz*z,(bx*x)-bx, (by*y)+by, (bz*z)-bz);
+        AxisAlignedBB box = new AxisAlignedBB(0, 0, 0, 8/16d,2/16d,4/16d).offset(x,y,z);
+        return box;
     }
+
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         tag.setFloat("x",x);
         tag.setFloat("y",y);
@@ -47,8 +49,19 @@ public class IngotLocation {
         float z = buf.readFloat();
         return new IngotLocation(x,y,z);
     }
-    public Vector3f getLocation() {
-        return new Vector3f(x,y,z);
+
+    public Vector3f getRelativeLocation() {
+        return (Vector3f) new Vector3f(x,y,z).scale(16);
     }
 
+    public boolean isValidLocation() {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("X:%s,Y:%s,Z:%s", x, y, z);
+    }
 }
+
+

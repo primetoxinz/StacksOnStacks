@@ -6,12 +6,13 @@ import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.vector.Vector3f;
 import pl.asie.charset.lib.render.ModelFactory;
 import pl.asie.charset.lib.render.SimpleBakedModel;
 import pl.asie.charset.lib.utils.RenderUtils;
+
+import static net.minecraft.util.EnumFacing.*;
 
 public class RenderIngot extends ModelFactory<PartIngot> {
     private TextureAtlasSprite texture;
@@ -21,42 +22,24 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         addDefaultBlockTransforms();
     }
 
+    public SimpleBakedModel createRectPrism(float x, float y, float z, float w, float h, float l, int color, TextureAtlasSprite texture) {
+        SimpleBakedModel model = new SimpleBakedModel(this);
+        ModelRotation rot = ModelRotation.X0_Y0;
+        model.addQuad(null, RenderUtils.BAKERY.makeBakedQuad(new Vector3f(x, y, z), new Vector3f(x + w, y, z + l), color, texture, DOWN, rot, false));
+        model.addQuad(null, RenderUtils.BAKERY.makeBakedQuad(new Vector3f(x, y + h, z), new Vector3f(x + w, y + h, z + l), color, texture, UP, rot, false));
+        model.addQuad(null, RenderUtils.BAKERY.makeBakedQuad(new Vector3f(x, y, z), new Vector3f(x, y + h, z + l), color, texture, WEST, rot, false));
+        model.addQuad(null, RenderUtils.BAKERY.makeBakedQuad(new Vector3f(x + w, y, z), new Vector3f(x + w, y + h, z + l), color, texture, EAST, rot, false));
+        model.addQuad(null, RenderUtils.BAKERY.makeBakedQuad(new Vector3f(x, y, z), new Vector3f(x + w, y + h, z), color, texture, NORTH, rot, false));
+        model.addQuad(null, RenderUtils.BAKERY.makeBakedQuad(new Vector3f(x, y, z + l), new Vector3f(x+w, y + h, z + l), color, texture, SOUTH, rot, false));
+        return model;
+    }
+
     @Override
     public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
         texture = RenderUtils.textureGetter.apply(new ResourceLocation("blocks/iron_block"));
-
-        SimpleBakedModel model = new SimpleBakedModel(this);
-        EnumFacing facing;
-        Vector3f tf = ingot.location.getLocation();
-        int renderColor = ingot.type.getColor();
-        float hp = 1/4f;
-        float MX = (4*tf.x)-hp, MY = 2*(tf.y+1), MZ = (8*tf.z)-hp;
-        float mx = (4*(tf.x-1))+hp, my = 2*(tf.y), mz = (8*(tf.z-1))+hp;
-
-        Vector3f[] from = new Vector3f[]{
-                new Vector3f(mx,my,mz),
-                new Vector3f(mx,MY,mz),
-                new Vector3f(mx,my,mz),
-                new Vector3f(mx,my,MZ),
-                new Vector3f(mx,my,mz),
-                new Vector3f(MX,my,mz),
-        };
-        Vector3f[] to = new Vector3f[]{
-                new Vector3f(MX,my,MZ),
-                new Vector3f(MX,MY,MZ),
-                new Vector3f(MX,MY,mz),
-                new Vector3f(MX,MY,MZ),
-                new Vector3f(mx,MY,MZ),
-                new Vector3f(MX,MY,MZ),
-        };
-
-        for(int i = 0; i< 6;i++) {
-            facing = EnumFacing.VALUES[i];
-            model.addQuad(facing, RenderUtils.BAKERY.makeBakedQuad(from[i],to[i],renderColor,texture,facing, ModelRotation.X0_Y0, true));
-            model.addQuad(facing, RenderUtils.BAKERY.makeBakedQuad(from[i],to[i],renderColor,texture,facing.getOpposite(), ModelRotation.X0_Y0, true));
-        }
-
-        return model;
+        Vector3f loc = ingot.location.getRelativeLocation();
+        int color = ingot.type.getColor();
+        return createRectPrism(loc.x+0.2f, loc.y, loc.z+0.1f, 8-0.4f, 2, 4-0.2f, color, texture);
     }
 
     @Override
