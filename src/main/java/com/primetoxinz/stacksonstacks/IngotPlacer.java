@@ -61,14 +61,18 @@ public class IngotPlacer {
     private double round(double num, double r) {
         return ((int) (num * (int) (r))) / r;
     }
-    private int truncate(double num) {
-        return (int) Math.abs(num);
+
+    private double relativePos(double x) {
+        double pos = ((x > 0) ? Math.floor(x): Math.ceil(x));
+        return Math.abs(x - pos);
     }
+
     private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos,EntityPlayer player) {
         double x = round(hit.xCoord, 2);
+        System.out.println(hit.xCoord+","+x);
         double y = round(hit.yCoord, 8);
         double z = round(hit.zCoord, 4);
-        IngotLocation loc = new IngotLocation((x - truncate(x)), (y - truncate(y)), (z - truncate(z)), player.getHorizontalFacing().getAxis());
+        IngotLocation loc = new IngotLocation(relativePos(x), relativePos(y), relativePos(z), player.getHorizontalFacing().getAxis());
         return loc;
     }
 
