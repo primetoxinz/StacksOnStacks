@@ -2,7 +2,7 @@ package com.primetoxinz.stacksonstacks;
 
 import mcmultipart.MCMultiPartMod;
 import mcmultipart.multipart.IMultipart;
-import mcmultipart.multipart.IMultipartContainer;
+import mcmultipart.multipart.INormallyOccludingPart;
 import mcmultipart.multipart.Multipart;
 import mcmultipart.raytrace.PartMOP;
 import net.minecraft.block.properties.IProperty;
@@ -15,7 +15,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,7 +34,7 @@ import static mcmultipart.multipart.MultipartHelper.getPartContainer;
  * Created by tyler on 5/28/16.
  */
 
-public class PartIngot extends Multipart implements IRenderComparable<PartIngot> {
+public class PartIngot extends Multipart implements IRenderComparable<PartIngot>, INormallyOccludingPart {
     public static final GenericExtendedProperty<PartIngot> PROPERTY = new GenericExtendedProperty<PartIngot>("part",PartIngot.class);
 
     public IngotLocation location;
@@ -70,6 +69,11 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     }
 
     @Override
+    public void addOcclusionBoxes(List<AxisAlignedBB> list) {
+        list.add(getBounds());
+    }
+
+    @Override
     public ItemStack getPickBlock(EntityPlayer player, PartMOP hit) {
         if(type != null && type.stack != null) {
             ItemStack copy = type.stack.copy();
@@ -95,7 +99,6 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if(location != null)
             location.writeToNBT(tag);
-
         if(type != null)
             type.writeToNBT(tag);
         else {
@@ -132,61 +135,33 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     @Override
     public void harvest(EntityPlayer player, PartMOP hit) {
-        notifyPartUpdate();
         if( player != null && player.isSneaking()) {
-            dropAll(this);
+            dropAll();
         } else {
             super.harvest(player,hit);
         }
     }
-
-    public static void drop(PartIngot ingot) {
-        World world = ingot.getWorld();
-        BlockPos pos = ingot.getPos();
-        if (world == null || pos == null)
-            return;
+    public void dropAll() {
+        new Thread(() -> {
+            for (IMultipart part : getContainer().getParts()) {
+                if (part instanceof PartIngot)
+                    ((PartIngot) part).drop();
+            }
+        }).start();
+    }
+    public void drop() {
+        World world = getWorld();
+        BlockPos pos = getPos();
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
-        if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops")
-                && !world.restoringBlockSnapshots) {
-            for (ItemStack stack : ingot.getDrops()) {
+        if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops") && !world.restoringBlockSnapshots) {
+            for (ItemStack stack : getDrops()) {
                 EntityItem item = new EntityItem(world, x, y, z, stack);
                 item.setDefaultPickupDelay();
                 world.spawnEntityInWorld(item);
             }
         }
-        if (ingot.getContainer().getParts().size() == 1) {
-            world.setBlockToAir(pos);
-        }
-//        if (ingot != null && ingot.getContainer() != null)
-        try {ingot.getContainer().removePart(ingot);}catch(IllegalStateException e) {}
-    }
-
-    public void dropAll(PartIngot ingot) {
-        IMultipartContainer container = ingot.getContainer();
-        if (container != null) {
-            for (IMultipart part : container.getParts()) {
-                if (part instanceof PartIngot) {
-                    PartIngot i = (PartIngot) part;
-                    drop(i);
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public void onPartChanged(IMultipart part) {
-        if (part instanceof PartIngot) {
-            PartIngot ingot = (PartIngot) part;
-            if (!onSurface(ingot)) {
-                dropAll(ingot);
-            }
-        }
-    }
-
-    @Override
-    public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
-        return true;
+        if(getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
+        getContainer().removePart(this);
     }
 
     public IngotLocation getLocation() {
@@ -195,18 +170,6 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     public Vector3f getRelativeLocation() {
         return location.getRelativeLocation();
-    }
-
-    public boolean isBelow(PartIngot ingot) {
-        Vector3f b = ingot.getRelativeLocation();
-        Vector3f i = getRelativeLocation();
-        return b.x == i.x && b.y - 2 == i.y && b.z == i.z;
-    }
-
-    public boolean onSurface(PartIngot ingot) {
-        if (ingot != null && ingot.getWorld() != null && !ingot.getWorld().isAirBlock(getPos().down()))
-            return true;
-        return false;
     }
 
     @Override
@@ -223,4 +186,11 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public int getLightValue() {
         return 15;
     }
+
+    @Override
+    public boolean occlusionTest(IMultipart part) {
+        return super.occlusionTest(part);
+    }
+
+
 }

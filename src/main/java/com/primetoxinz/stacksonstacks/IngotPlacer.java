@@ -22,7 +22,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -49,8 +48,6 @@ public class IngotPlacer {
         ItemStack main = player.getHeldItemMainhand();
         ItemStack off = player.getHeldItemOffhand();
         BlockPos pos = event.getTarget().getBlockPos();
-
-
         float partialTicks = event.getPartialTicks();
 
         if (canBeIngot(main) || canBeIngot(off)) {
@@ -67,7 +64,7 @@ public class IngotPlacer {
         return Math.abs(x - pos);
     }
 
-    private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos,EntityPlayer player) {
+    private IngotLocation getPositionFromHit(Vec3d hit, EntityPlayer player) {
         double x = relativePos(round(hit.xCoord, 2));
         if ( hit.xCoord < 0) {
             x=(x+.5)%1;
@@ -77,7 +74,6 @@ public class IngotPlacer {
         if ( hit.zCoord < 0) {
             z=Math.abs(.75-z);
         }
-        System.out.println(hit.zCoord+","+z);
         IngotLocation loc = new IngotLocation(x, y, z, player.getHorizontalFacing().getAxis());
         return loc;
     }
@@ -123,7 +119,6 @@ public class IngotPlacer {
                 if (part instanceof PartIngot) {
                     PartIngot i = (PartIngot) part;
                     if (i.getLocation().equals(ingot)) {
-                        System.out.println("equals");
                         return false;
                     }
                 }
@@ -133,19 +128,23 @@ public class IngotPlacer {
     }
 
     private EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
-
+        if(stack == null || stack.stackSize <= 0)
+            return FAIL;
         if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
             if (player.isSneaking()) {
-                int i = 0;
-                while (stack.stackSize > 0) {
-                    if (i > 64)
-                        break;
-                    System.out.println(stack.stackSize);
-                    Vec3d newHit = new Vec3d(0, 0, 0);
-                    if (place(world, pos, side, newHit, stack, player))
-                        if (!player.isCreative()) consumeItem(stack);
-                    i++;
-                }
+                Thread thread = new Thread(() -> {
+                    Vec3d h = new Vec3d(0, 0, 0);
+                    while (stack.stackSize > 0) {
+                        if(stack.stackSize <= 0)
+                            break;
+                        boolean p = place(world, pos, side, h, stack, player);
+                        if (p) {
+                            consumeItem(stack);
+                        }
+                        h=nextHit(h);
+                    }
+                });
+                thread.start();
                 return SUCCESS;
             } else {
                 if (place(world, pos, side, hit, stack, player)) {
@@ -157,21 +156,35 @@ public class IngotPlacer {
         }
         return FAIL;
     }
-
-
+    public Vec3d nextHit(Vec3d hit) {
+        double x = hit.xCoord;
+        double y = hit.yCoord;
+        double z = hit.zCoord;
+        if(x>.5f) {
+            z+=.25f;
+            if(z > .75f) {
+                y+=.125f;
+                z=0;
+            }
+            x=0;
+        } else {
+            x+=.5f;
+        }
+        return new Vec3d(x,y,z);
+    }
     private boolean place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
         if (side != EnumFacing.UP)
             return false;
         if (MultipartHelper.getPartContainer(world, pos) == null) {
             pos = pos.offset(side);
         } else {
-            IngotLocation location = getPositionFromHit(hit, pos,player);
-            player.addChatComponentMessage(new TextComponentString(location.toString()));
+            IngotLocation location = getPositionFromHit(hit, player);
+
             if (location.getRelativeLocation().getY() == 0) {
                 pos = pos.offset(side);
             }
         }
-        IngotLocation location = getPositionFromHit(hit, pos,player);
+        IngotLocation location = getPositionFromHit(hit, player);
         PartIngot part = new PartIngot(location, new IngotType(stack));
 
         if (canAddPart(world, pos, part)) {
@@ -188,7 +201,10 @@ public class IngotPlacer {
     }
 
     private void consumeItem(ItemStack stack) {
-        stack.stackSize--;
+        if(stack.stackSize <= 0)
+            stack = null;
+        else
+            stack.stackSize--;
     }
 
     public static void drawSelectionBox(EntityPlayer player, RayTraceResult movingObjectPositionIn, int execute, float partialTicks) {

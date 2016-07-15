@@ -41,7 +41,7 @@ public abstract class BaseBakedModel implements IBakedModel {
 
     @Override
     public boolean isAmbientOcclusion() {
-        return false;
+        return true;
     }
 
     @Override
