@@ -25,7 +25,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.model.TRSRTransformation;
 import pl.asie.charset.lib.utils.RenderUtils;
 
-import javax.vecmath.Vector3f;
 import java.util.EnumMap;
 
 public abstract class BaseBakedModel implements IBakedModel {
@@ -40,12 +39,6 @@ public abstract class BaseBakedModel implements IBakedModel {
         this.particle = particle != null ? particle : TextureMap.LOCATION_MISSING_TEXTURE;
     }
 
-//    @Override
-//    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-//        return ImmutablePair.of(this,
-//                transformMap.containsKey(cameraTransformType) ? transformMap.get(cameraTransformType).getMatrix() : null);
-//    }
-
     @Override
     public boolean isAmbientOcclusion() {
         return true;
@@ -53,7 +46,7 @@ public abstract class BaseBakedModel implements IBakedModel {
 
     @Override
     public boolean isGui3d() {
-        return true;
+        return false;
     }
 
     @Override
@@ -76,7 +69,7 @@ public abstract class BaseBakedModel implements IBakedModel {
         return ItemOverrideList.NONE;
     }
 
-    public void addTransformation(ItemCameraTransforms.TransformType type, TRSRTransformation transformation) {
+   /* public void addTransformation(ItemCameraTransforms.TransformType type, TRSRTransformation transformation) {
         transformMap.put(type, TRSRTransformation.blockCornerToCenter(transformation));
     }
 
@@ -133,5 +126,5 @@ public abstract class BaseBakedModel implements IBakedModel {
         addTransformation(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND, getTransformation(1.13f, 3.2f, 1.13f, 0, -90, 25, 0.68f));
         addTransformation(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND,  getTransformation(1.13f, 3.2f, 1.13f, 0, 90, -25, 0.68f));
         return this;
-    }
+    }*/
 }

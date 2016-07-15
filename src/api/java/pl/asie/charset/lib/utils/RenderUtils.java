@@ -24,7 +24,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -39,15 +38,13 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.FMLLog;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
-import pl.asie.charset.lib.render.CharsetFaceBakery;
 
-import javax.annotation.Nonnull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
 public final class RenderUtils {
-	public static final CharsetFaceBakery BAKERY = new CharsetFaceBakery();
+
 	public static final Function<ResourceLocation, TextureAtlasSprite> textureGetter = new Function<ResourceLocation, TextureAtlasSprite>() {
 		public TextureAtlasSprite apply(ResourceLocation location) {
 			return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString());
@@ -66,25 +63,6 @@ public final class RenderUtils {
 
 	}
 
-	public static BakedQuad bakeFace(Vector3f from, Vector3f to, @Nonnull EnumFacing facing,
-							   TextureAtlasSprite sprite, int tintIndex) {
-		Vector3f fFrom = new Vector3f(from);
-		Vector3f fTo = new Vector3f(to);
-		EnumFacing.AxisDirection facingDir = facing.getAxisDirection();
-		switch (facing.getAxis()) {
-			case X:
-				fFrom.x = fTo.x = facingDir == EnumFacing.AxisDirection.POSITIVE ? to.x : from.x;
-				break;
-			case Y:
-				fFrom.y = fTo.y = facingDir == EnumFacing.AxisDirection.POSITIVE ? to.y : from.y;
-				break;
-			case Z:
-				fFrom.z = fTo.z = facingDir == EnumFacing.AxisDirection.POSITIVE ? to.z : from.z;
-				break;
-		}
-
-		return BAKERY.makeBakedQuad(fFrom, fTo, tintIndex, sprite, facing, ModelRotation.X0_Y0, true);
-	}
 
 	public static int getAverageColor(TextureAtlasSprite sprite, AveragingMode mode) {
 		int pixelCount = 0;
@@ -128,7 +106,7 @@ public final class RenderUtils {
 		for (int i = 0; i < 3; i++) {
 			avgColor[i] = (avgColor[i] / pixelCount) & 0xFF;
 		}
-		return 0xFF000000 | avgColor[0] | (avgColor[1] << 8) | (avgColor[2] << 16);
+        return (0xFF000000 | avgColor[0] | (avgColor[1] << 8) | (avgColor[2] << 16));
 	}
 
 	public static BufferedImage getBufferedImage(ResourceLocation location) {

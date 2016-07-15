@@ -122,8 +122,6 @@ public abstract class ModelFactory<T extends IRenderComparable<T>> extends BaseB
 
     @Override
     public TextureAtlasSprite getParticleTexture() {
-        // TODO: If IBlockState-sensitive getParticleTexture ever hits,
-        // check for the barrel texture
         return Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getTexture(Blocks.LOG.getDefaultState());
     }
 

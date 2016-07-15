@@ -4,10 +4,7 @@ import mcmultipart.MCMultiPartMod;
 import mcmultipart.multipart.IMultipart;
 import mcmultipart.multipart.IMultipartContainer;
 import mcmultipart.multipart.Multipart;
-import mcmultipart.multipart.MultipartHelper;
 import mcmultipart.raytrace.PartMOP;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -25,8 +22,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
+import org.lwjgl.util.vector.Vector3f;
 import pl.asie.charset.lib.render.IRenderComparable;
-import pl.asie.charset.lib.utils.GenericExtendedProperty;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +36,8 @@ import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 
 public class PartIngot extends Multipart implements IRenderComparable<PartIngot> {
     public static final GenericExtendedProperty<PartIngot> PROPERTY = new GenericExtendedProperty<PartIngot>("part",PartIngot.class);
+
+
     public IngotLocation location;
     public IngotType type;
     public PartIngot() {}
@@ -127,6 +126,90 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     }
 
     @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        return getBounds();
+    }
+
+    @Override
+    public void harvest(EntityPlayer player, PartMOP hit) {
+        notifyPartUpdate();
+        if( player != null && player.isSneaking()) {
+            dropAll(this);
+        } else {
+            super.harvest(player,hit);
+        }
+    }
+
+    public static void drop(PartIngot ingot) {
+        World world = ingot.getWorld();
+        BlockPos pos = ingot.getPos();
+        if (world == null || pos == null)
+            return;
+        double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
+        if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops")
+                && !world.restoringBlockSnapshots) {
+            for (ItemStack stack : ingot.getDrops()) {
+                EntityItem item = new EntityItem(world, x, y, z, stack);
+                item.setDefaultPickupDelay();
+                world.spawnEntityInWorld(item);
+            }
+        }
+        if (ingot.getContainer().getParts().size() == 1) {
+            world.setBlockToAir(pos);
+        }
+//        if (ingot != null && ingot.getContainer() != null)
+        try {ingot.getContainer().removePart(ingot);}catch(IllegalStateException e) {}
+    }
+
+    public void dropAll(PartIngot ingot) {
+        IMultipartContainer container = ingot.getContainer();
+        if (container != null) {
+            for (IMultipart part : container.getParts()) {
+                if (part instanceof PartIngot) {
+                    PartIngot i = (PartIngot) part;
+                    drop(i);
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void onPartChanged(IMultipart part) {
+        if (part instanceof PartIngot) {
+            PartIngot ingot = (PartIngot) part;
+            if (!onSurface(ingot)) {
+                dropAll(ingot);
+            }
+        }
+    }
+
+    @Override
+    public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
+        return true;
+    }
+
+    public IngotLocation getLocation() {
+        return location;
+    }
+
+    public Vector3f getRelativeLocation() {
+        return location.getRelativeLocation();
+    }
+
+    public boolean isBelow(PartIngot ingot) {
+        Vector3f b = ingot.getRelativeLocation();
+        Vector3f i = getRelativeLocation();
+        return b.x == i.x && b.y - 2 == i.y && b.z == i.z;
+    }
+
+    public boolean onSurface(PartIngot ingot) {
+        if (ingot != null && ingot.getWorld() != null && !ingot.getWorld().isAirBlock(getPos().down()))
+            return true;
+        return false;
+    }
+
+    @Override
     public boolean renderEquals(PartIngot other) {
         return false;
     }
@@ -134,62 +217,5 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     @Override
     public int renderHashCode() {
         return 0;
-    }
-
-    @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return getBounds();
-    }
-
-    @Override
-    public void harvest(EntityPlayer player, PartMOP hit) {
-        if( player != null && player.isSneaking()) {
-            IMultipartContainer container = MultipartHelper.getPartContainer(getWorld(),getPos());
-            for(IMultipart part: container.getParts()) {
-                if (part instanceof PartIngot) {
-                    PartIngot ingot = (PartIngot) part;
-                    ingot.drop();
-                }
-            }
-        } else {
-            super.harvest(player,hit);
-        }
-    }
-
-    public void drop() {
-        World world = getWorld();
-        BlockPos pos = getPos();
-        double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
-
-       if(!world.isRemote && world.getGameRules().getBoolean("doTileDrops")
-                && !world.restoringBlockSnapshots) {
-            for (ItemStack stack : getDrops()) {
-                EntityItem item = new EntityItem(world, x, y, z, stack);
-                item.setDefaultPickupDelay();
-                world.spawnEntityInWorld(item);
-            }
-        }
-        getContainer().removePart(this);
-
-    }
-
-    @Override
-    protected void notifyBlockUpdate() {
-        super.notifyBlockUpdate();
-    }
-
-    @Override
-    public void onNeighborBlockChange(Block block) {
-        super.onNeighborBlockChange(block);
-        World world = getWorld();
-        IBlockState down = world.getBlockState(getPos().down());
-        if(down.getMaterial() == Material.AIR) {
-            drop();
-        }
-    }
-
-    @Override
-    public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
-        return true;
     }
 }

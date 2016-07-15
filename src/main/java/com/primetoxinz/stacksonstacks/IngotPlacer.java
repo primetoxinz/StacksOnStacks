@@ -22,6 +22,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -37,18 +38,19 @@ import java.util.List;
 import java.util.UUID;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
-import static net.minecraft.util.EnumActionResult.FAIL;
-import static net.minecraft.util.EnumActionResult.SUCCESS;
+import static net.minecraft.util.EnumActionResult.*;
 
 public class IngotPlacer {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     @SideOnly(Side.CLIENT)
     public final void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
-        ItemStack main = event.getPlayer().getHeldItemMainhand();
-        ItemStack off = event.getPlayer().getHeldItemOffhand();
-        BlockPos pos = event.getTarget().getBlockPos();
         EntityPlayer player = event.getPlayer();
+        ItemStack main = player.getHeldItemMainhand();
+        ItemStack off = player.getHeldItemOffhand();
+        BlockPos pos = event.getTarget().getBlockPos();
+
+
         float partialTicks = event.getPartialTicks();
 
         if (canBeIngot(main) || canBeIngot(off)) {
@@ -60,18 +62,17 @@ public class IngotPlacer {
         return ((int) (num * (int) (r))) / r;
     }
 
-    private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos) {
+    private IngotLocation getPositionFromHit(Vec3d hit, BlockPos pos,EntityPlayer player) {
         double x = round(hit.xCoord, 2);
         double y = round(hit.yCoord, 8);
         double z = Math.abs(round(hit.zCoord, 4));
-        IngotLocation loc = new IngotLocation((x - ((int) x)), (y - ((int) y)), (z - ((int) z)));
+        IngotLocation loc = new IngotLocation((x - ((int) x)), (y - ((int) y)), (z - ((int) z)), player.getHorizontalFacing().getAxis());
         return loc;
     }
 
     private boolean canBeIngot(ItemStack stack) {
         if (stack == null)
             return false;
-
         int[] ids = OreDictionary.getOreIDs(stack);
         for(int id: ids) {
             String name = OreDictionary.getOreName(id);
@@ -89,12 +90,10 @@ public class IngotPlacer {
         onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
     }
 
-    public boolean canAddPart(World world, BlockPos pos, IMultipart part) {
+    public boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
         IMultipartContainer container = getPartContainer(world, pos);
-        PartIngot ingot = (PartIngot) part;
         if (container == null) {
             List<AxisAlignedBB> list = new ArrayList<AxisAlignedBB>();
-            ingot.addCollisionBoxes(ingot.getBounds(), list, null);
             for (AxisAlignedBB bb : list)
                 if (!world.checkNoEntityCollision(bb.offset(pos.getX(), pos.getY(), pos.getZ()))) return false;
 
@@ -103,41 +102,70 @@ public class IngotPlacer {
                 TileMultipartContainer tmp = new TileMultipartContainer();
                 for (IMultipart p : parts)
                     tmp.getPartContainer().addPart(p, false, false, false, false, UUID.randomUUID());
-                return tmp.canAddPart(part);
+                return tmp.canAddPart(ingot);
             }
 
             return true;
+        } else {
+            for (IMultipart part : container.getParts()) {
+                if (part instanceof PartIngot) {
+                    PartIngot i = (PartIngot) part;
+                    if (i.getLocation().equals(ingot)) {
+                        System.out.println("equals");
+                        return false;
+                    }
+                }
+            }
+            return container.canAddPart(ingot);
         }
-        return container.canAddPart(part);
-
     }
 
     private EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
 
         if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
-            if (place(world, pos, side, hit, stack, player))
-                if (!player.isCreative()) consumeItem(stack);
-            return SUCCESS;
+            if (player.isSneaking()) {
+                int i = 0;
+                while (stack.stackSize > 0) {
+                    if (i > 64)
+                        break;
+                    System.out.println(stack.stackSize);
+                    Vec3d newHit = new Vec3d(0, 0, 0);
+                    if (place(world, pos, side, newHit, stack, player))
+                        if (!player.isCreative()) consumeItem(stack);
+                    i++;
+                }
+                return SUCCESS;
+            } else {
+                if (place(world, pos, side, hit, stack, player)) {
+                    if (!player.isCreative()) consumeItem(stack);
+                    return SUCCESS;
+                }
+            }
+            return PASS;
         }
         return FAIL;
     }
 
 
     private boolean place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
+        if (side != EnumFacing.UP)
+            return false;
         if (MultipartHelper.getPartContainer(world, pos) == null) {
-            if(side != EnumFacing.UP)
-                return false;
             pos = pos.offset(side);
-        }
-        IngotLocation location = getPositionFromHit(hit, pos);
-        IMultipart part = new PartIngot(location, new IngotType(stack));
-
-
-        if (location.isValidLocation() && canAddPart(world, pos, part)) {
-            if (!world.isRemote) {
-                MultipartHelper.addPart(world, pos, part);
+        } else {
+            IngotLocation location = getPositionFromHit(hit, pos,player);
+            player.addChatComponentMessage(new TextComponentString(location.toString()));
+            if (location.getRelativeLocation().getY() == 0) {
+                pos = pos.offset(side);
             }
+        }
+        IngotLocation location = getPositionFromHit(hit, pos,player);
+        PartIngot part = new PartIngot(location, new IngotType(stack));
 
+        if (canAddPart(world, pos, part)) {
+            if (!world.isRemote) {
+                try {MultipartHelper.addPart(world, pos, part);}catch(NullPointerException e){}
+            }
             SoundType sound = SoundType.METAL;
             if (sound != null)
                 world.playSound(player, pos, sound.getPlaceSound(), SoundCategory.BLOCKS, sound.getVolume(), sound.getPitch());
@@ -162,22 +190,27 @@ public class IngotPlacer {
             GlStateManager.depthMask(false);
             BlockPos pos = movingObjectPositionIn.getBlockPos();
             IBlockState state = world.getBlockState(pos);
-
+            EnumFacing.Axis facing = player.getHorizontalFacing().getAxis();
             if (state.getMaterial() != Material.AIR && world.getWorldBorder().contains(pos)) {
                 double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
                 double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
                 double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
                 AxisAlignedBB block = state.getSelectedBoundingBox(world, pos);
                 double x = pos.getX(), y = (block.maxY), z = pos.getZ();
-
                 AxisAlignedBB box;
+
                 for (int i = 1; i <= 4; i++) {
-                    box = new AxisAlignedBB(x, y, z + (i / 4d) - .25, x + .5, y, z + (i / 4d)).expandXyz(.002d).offset(-d0, -d1, -d2);
-                    drawLine(box);
-                }
-                for (int i = 1; i <= 4; i++) {
-                    box = new AxisAlignedBB(x + .5, y, z + (i / 4d) - .25, x + 1, y, z + (i / 4d)).expandXyz(.002d).offset(-d0, -d1, -d2);
-                    drawLine(box);
+                    for(int j=1;j<=2;j++) {
+                        if (facing == EnumFacing.Axis.Z) {
+
+                            box = new AxisAlignedBB(x + (i / 4d) - .25, y, z + (.5 * (j - 1)), x + (i / 4d), y,z + j * .5 ).expandXyz(.002d).offset(-d0, -d1, -d2);
+                        }
+                        else {
+                            box = new AxisAlignedBB(x + (.5 * (j - 1)), y, z + (i / 4d) - .25, x + j * .5, y, z + (i / 4d)).expandXyz(.002d).offset(-d0, -d1, -d2);
+                        }
+
+                        drawLine(box);
+                    }
                 }
 
             }
