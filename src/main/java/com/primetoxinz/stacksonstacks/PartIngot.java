@@ -24,6 +24,7 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import org.lwjgl.util.vector.Vector3f;
 import pl.asie.charset.lib.render.IRenderComparable;
+import pl.asie.charset.lib.utils.GenericExtendedProperty;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +37,6 @@ import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 
 public class PartIngot extends Multipart implements IRenderComparable<PartIngot> {
     public static final GenericExtendedProperty<PartIngot> PROPERTY = new GenericExtendedProperty<PartIngot>("part",PartIngot.class);
-
 
     public IngotLocation location;
     public IngotType type;
@@ -217,5 +217,10 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     @Override
     public int renderHashCode() {
         return 0;
+    }
+
+    @Override
+    public int getLightValue() {
+        return 15;
     }
 }

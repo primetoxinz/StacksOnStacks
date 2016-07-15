@@ -1,19 +1,19 @@
 package com.primetoxinz.stacksonstacks;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import pl.asie.charset.lib.utils.RenderUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import static pl.asie.charset.lib.utils.RenderUtils.AveragingMode.FULL;
 
-/**
- * Created by tyler on 6/4/16.
- */
 public class IngotType {
+    public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();
 
     public ItemStack stack;
     public int color;
@@ -23,17 +23,21 @@ public class IngotType {
             stack.stackSize=1;
         }
         this.stack = stack;
+
         if(stack != null) {
-            TextureAtlasSprite sprite = RenderUtils.getSprite(stack);
-            if (sprite != null)
-                setColor(RenderUtils.getAverageColor(sprite, FULL));
+
+            DummyStack dummy = getDummy(stack);
+            if (colorCache.containsKey(dummy)) {
+                color = colorCache.get(dummy);
+            } else {
+                TextureAtlasSprite sprite = RenderUtils.getSprite(stack);
+                color = RenderUtils.getAverageColor(sprite, FULL);
+                colorCache.put(dummy, color);
+            }
+
         }
     }
 
-    public IngotType setColor(int color) {
-        this.color = color;
-        return this;
-    }
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if(stack != null)
             stack.writeToNBT(tag);
@@ -42,12 +46,14 @@ public class IngotType {
     }
     public static IngotType readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
-        int color = tag.getInteger("color");
-        return new IngotType(stack).setColor(color);
+        IngotType type = new IngotType(stack);
+        type.color = tag.getInteger("color");
+        return type;
     }
 
     public void writeUpdatePacket(PacketBuffer buf) {
         buf.writeItemStackToBuffer(stack);
+        buf.writeInt(color);
     }
 
     public static IngotType readUpdatePacket(PacketBuffer buf) {
@@ -57,10 +63,34 @@ public class IngotType {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new IngotType(stack);
+        IngotType type = new IngotType(stack);
+        type.color = buf.readInt();
+        return type;
     }
-
     public int getColor() {
         return color;
+    }
+
+    public static DummyStack getDummy(ItemStack stack) {
+        return new DummyStack(stack.getItem(),stack.getMetadata());
+    }
+    public static class DummyStack {
+        Item item;
+        int meta;
+        public  DummyStack(Item item, int meta) {
+            this.item = item;
+            this.meta = meta;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return ((DummyStack) o).item == this.item &&
+            ((DummyStack) o).meta == this.meta;
+        }
+
+        @Override
+        public int hashCode() {
+            return Item.getIdFromItem(item)*meta;
+        }
     }
 }

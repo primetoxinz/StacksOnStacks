@@ -65,6 +65,8 @@ public final class RenderUtils {
 
 
 	public static int getAverageColor(TextureAtlasSprite sprite, AveragingMode mode) {
+		if(sprite == null)
+			return -1;
 		int pixelCount = 0;
 		int[] data = sprite.getFrameTextureData(0)[0];
 		int[] avgColor = new int[3];

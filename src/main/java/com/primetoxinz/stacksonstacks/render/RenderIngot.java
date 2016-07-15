@@ -11,10 +11,11 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import org.lwjgl.util.vector.Vector3f;
 import pl.asie.charset.lib.render.ModelFactory;
 import pl.asie.charset.lib.render.SimpleBakedModel;
+
+import java.awt.*;
 
 import static net.minecraft.util.EnumFacing.*;
 
@@ -29,14 +30,17 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         this.format = format;
     }
 
-    private void putVertex(UnpackedBakedQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
+    private void putVertex(TestQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
+        Color c = new Color(builder.getTint());
+
+
         for (int e = 0; e < format.getElementCount(); e++) {
             switch (format.getElement(e).getUsage()) {
                 case POSITION:
                     builder.put(e, (float) x, (float) y, (float) z, 1.0f);
                     break;
                 case COLOR:
-                    builder.put(e, 1.0f, 1.0f, 1.0f, 1.0f);
+                    builder.put(e, c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f, 1.0f);
                     break;
                 case UV:
                     if (format.getElement(e).getIndex() == 0) {
@@ -55,16 +59,22 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         }
     }
 
-    private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side) {
-        Vec3d normal = v1;//v1.subtract(v2).crossProduct(v3.subtract(v2));
-        UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(format);
+    private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
+        Vec3d normal = v1.subtract(v2).crossProduct(v3.subtract(v2));
+        TestQuad.Builder builder = new TestQuad.Builder(format);
         builder.setTexture(sprite);
-        builder.setQuadOrientation(UP);
-        builder.setApplyDiffuseLighting(true);
-        putVertex(builder, v1, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
-        putVertex(builder, v2, v2.xCoord, v2.yCoord, v2.zCoord, 0, 16);
-        putVertex(builder, v3, v3.xCoord, v3.yCoord, v3.zCoord, 16,16);
-        putVertex(builder, v4, v4.xCoord, v4.yCoord, v4.zCoord, 16, 0);
+        builder.setQuadTint(color);
+        if(side == WEST || side == NORTH || side == UP) {
+            putVertex(builder, v1, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
+            putVertex(builder, v2, v2.xCoord, v2.yCoord, v2.zCoord, 0, 16);
+            putVertex(builder, v3, v3.xCoord, v3.yCoord, v3.zCoord, 16, 16);
+            putVertex(builder, v4, v4.xCoord, v4.yCoord, v4.zCoord, 0, 0);
+        } else {
+            putVertex(builder, v1, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
+            putVertex(builder, v2, v2.xCoord, v2.yCoord, v2.zCoord, 16, 0);
+            putVertex(builder, v3, v3.xCoord, v3.yCoord, v3.zCoord, 16, 16);
+            putVertex(builder, v4, v4.xCoord, v4.yCoord, v4.zCoord, 0, 16);
+        }
         return builder.build();
     }
 
@@ -72,24 +82,17 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         SimpleBakedModel model = new SimpleBakedModel(this);
         Vec3d vec = new Vec3d(x, y, z);
         float o = 0.4f/16;
-        EnumFacing face = DOWN;
-
-        model.addQuad(null, createQuad(vec, vec.addVector(w, 0, 0), vec.addVector(w, 0,l), vec.addVector(0, 0, l),face));
+        model.addQuad(null, createQuad(vec, vec.addVector(w, 0, 0), vec.addVector(w, 0,l), vec.addVector(0, 0, l),DOWN,color));
         vec = vec.addVector(0,h,0);
-        face = UP;
-        model.addQuad(null, createQuad(vec.addVector(o,0,o), vec.addVector(o, 0, l-o), vec.addVector(w-o, 0,l-o), vec.addVector(w-o, 0, o),face));
+        model.addQuad(null, createQuad(vec.addVector(o,0,o), vec.addVector(o, 0, l-o), vec.addVector(w-o, 0,l-o), vec.addVector(w-o, 0, o),UP,color));
         vec = new Vec3d(x,y,z);
-        face = NORTH;
-        model.addQuad(null, createQuad(vec, vec.addVector(o, h, o), vec.addVector(w-o, h,o), vec.addVector(w, 0, 0),face));
+        model.addQuad(null, createQuad(vec, vec.addVector(o, h, o), vec.addVector(w-o, h,o), vec.addVector(w, 0, 0),NORTH,color));
         vec = vec.addVector(0,0,l);
-        face = SOUTH;
-        model.addQuad(null, createQuad(vec, vec.addVector(w, 0, 0), vec.addVector(w-o, h,-o), vec.addVector(o, h, -o),face));
+        model.addQuad(null, createQuad(vec, vec.addVector(w, 0, 0), vec.addVector(w-o, h,-o), vec.addVector(o, h, -o),SOUTH,color));
         vec = new Vec3d(x,y,z);
-        face = EAST;
-        model.addQuad(null, createQuad(vec, vec.addVector(0, 0, l), vec.addVector(o, h,l-o), vec.addVector(o, h, o),face));
+        model.addQuad(null, createQuad(vec, vec.addVector(0, 0, l), vec.addVector(o, h,l-o), vec.addVector(o, h, o),EAST,color));
         vec = vec.addVector(w,0,0);
-        face = WEST;
-        model.addQuad(null, createQuad(vec,vec.addVector(-o, h, o) , vec.addVector(-o, h,l-o), vec.addVector(0, 0, l),face));
+        model.addQuad(null, createQuad(vec,vec.addVector(-o, h, o) , vec.addVector(-o, h,l-o), vec.addVector(0, 0, l),WEST,color));
         return model;
     }
 

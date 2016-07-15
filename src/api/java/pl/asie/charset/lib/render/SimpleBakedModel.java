@@ -72,7 +72,7 @@ public class SimpleBakedModel implements IBakedModel {
 
     @Override
     public boolean isAmbientOcclusion() {
-        return parent != null ? parent.isAmbientOcclusion() : true;
+        return false;/* parent != null ? parent.isAmbientOcclusion() : true;*/
     }
 
     @Override
@@ -82,7 +82,7 @@ public class SimpleBakedModel implements IBakedModel {
 
     @Override
     public boolean isBuiltInRenderer() {
-        return false;
+        return true;
     }
 
     @Override
