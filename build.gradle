@@ -14,14 +14,20 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "1.0"
-group= "com.primetoxinz.stacksonstacks" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "stacksonstacks"
+ext.configFile = file('build.properties')
+ext.config = parseConfig(configFile)
+
+version = config.version
+group = config.group // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = config.mod_name
 
 minecraft {
-    version = "1.10.2-12.18.0.2002-1.10.0"
+    version = "${config.mc_version}-${config.forge_version}-${config.mc_version_suffix}"
     runDir = "run"
-    mappings = "snapshot_20160518"
+    mappings = config.mc_mappings
+    replace '@MC_VERSION@', config.accepted_version
+    replace '@MOD_VERSION@', config.version
+    replaceIn 'SoS.java'
 }
 
 repositories {
@@ -57,5 +63,13 @@ processResources
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+    }
+}
+
+def parseConfig(File config) {
+    config.withReader {
+        def prop = new Properties()
+        prop.load(it)
+        return (new ConfigSlurper().parse(prop))
     }
 }

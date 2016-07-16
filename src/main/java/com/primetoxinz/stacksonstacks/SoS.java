@@ -6,16 +6,19 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = SoS.MODID)
+@Mod(modid = SoS.MODID,version = SoS.MOD_VERISON, acceptedMinecraftVersions = SoS.MC_VERISON, dependencies = SoS.DEP)
 public class SoS {
     public static final String MODID = "stacksonstacks";
-    private static final String PROXY = "com.primetoxinz.stacksonstacks.proxy.";
+    public static final String DEP = "require-after:mcmultipart";
+    public static final String MC_VERISON = "@MC_VERSION@";
+    public static final String MOD_VERISON = "@MOD_VERSION@";
+
     @Mod.Instance(MODID)
     public static SoS instance;
-
+    private static final String PROXY = "com.primetoxinz.stacksonstacks.proxy.";
     @SidedProxy( modId = MODID,clientSide = PROXY+"ClientProxy",serverSide = PROXY+"CommonProxy")
     public static com.primetoxinz.stacksonstacks.proxy.CommonProxy proxy;
-
+    
     @Mod.EventHandler
     public void pre(FMLPreInitializationEvent e) {
         MinecraftForge.EVENT_BUS.register(new IngotPlacer());
