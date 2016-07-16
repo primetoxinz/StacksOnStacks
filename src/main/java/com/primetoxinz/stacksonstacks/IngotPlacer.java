@@ -162,7 +162,7 @@ public class IngotPlacer {
                 Thread thread = new Thread(() -> {
                     long startTime = System.currentTimeMillis();
                     Vec3d h = new Vec3d(0, 0, 0);
-                    while (stack.stackSize > 0 || (System.currentTimeMillis()-startTime)<10000) {
+                    while (stack.stackSize > 0 && (System.currentTimeMillis()-startTime)<10000) {
                         if(stack.stackSize <= 0)
                             break;
                         try {
