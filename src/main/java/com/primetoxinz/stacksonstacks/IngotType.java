@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import pl.asie.charset.lib.utils.RenderUtils;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class IngotType {
     public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();
 
     public ItemStack stack;
+    public ResourceLocation texture_override;
     public int color;
     public IngotType(ItemStack stack) {
         if(stack != null) {

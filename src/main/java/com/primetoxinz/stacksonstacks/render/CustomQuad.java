@@ -10,8 +10,8 @@ import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 /**
  * Created by tyler on 7/14/16.
  */
-public class TestQuad extends UnpackedBakedQuad {
-    public TestQuad(float[][][] unpackedData, int tint, EnumFacing orientation, TextureAtlasSprite texture, boolean applyDiffuseLighting, VertexFormat format) {
+public class CustomQuad extends UnpackedBakedQuad {
+    public CustomQuad(float[][][] unpackedData, int tint, EnumFacing orientation, TextureAtlasSprite texture, boolean applyDiffuseLighting, VertexFormat format) {
         super(unpackedData, tint, orientation, texture, applyDiffuseLighting, format);
     }
 
@@ -154,7 +154,7 @@ public class TestQuad extends UnpackedBakedQuad {
                     }
                 }
             }
-            return new TestQuad(unpackedData, tint, orientation, texture, applyDiffuseLighting, format);
+            return new CustomQuad(unpackedData, tint, orientation, texture, applyDiffuseLighting, format);
         }
     }
 

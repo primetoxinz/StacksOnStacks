@@ -20,7 +20,7 @@ import java.awt.*;
 import static net.minecraft.util.EnumFacing.*;
 
 public class RenderIngot extends ModelFactory<PartIngot> {
-    public static final ResourceLocation TEXTURE = new ResourceLocation("blocks/iron_block");
+    public static final ResourceLocation TEXTURE = new ResourceLocation("stacksonstacks","blocks/ingot");
     private TextureAtlasSprite sprite;
     private VertexFormat format;
 
@@ -30,10 +30,8 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         this.format = format;
     }
 
-    private void putVertex(TestQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
+    private void putVertex(CustomQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
         Color c = new Color(builder.getTint());
-
-
         for (int e = 0; e < format.getElementCount(); e++) {
             switch (format.getElement(e).getUsage()) {
                 case POSITION:
@@ -61,7 +59,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
     private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
         Vec3d normal = v1.subtract(v2).crossProduct(v3.subtract(v2));
-        TestQuad.Builder builder = new TestQuad.Builder(format);
+        CustomQuad.Builder builder = new CustomQuad.Builder(format);
         builder.setTexture(sprite);
         builder.setQuadTint(color);
         if(side == WEST || side == NORTH || side == UP) {
@@ -104,8 +102,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     }
 
     @Override
-    public PartIngot fromItemStack(ItemStack stack) {  return null;
-    }
+    public PartIngot fromItemStack(ItemStack stack) {  return null; }
 
     @Override
     public TextureAtlasSprite getParticleTexture() {

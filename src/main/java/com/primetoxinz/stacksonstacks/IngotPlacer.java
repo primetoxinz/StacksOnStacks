@@ -55,6 +55,13 @@ public class IngotPlacer {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public final void placeIngot(PlayerInteractEvent.RightClickBlock e) {
+        if (e.getSide().isClient())
+            return;
+        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
+    }
+
     private double round(double num, double r) {
         return ((int) (num * (int) (r))) / r;
     }
@@ -91,20 +98,12 @@ public class IngotPlacer {
         return  stack.getUnlocalizedName().contains("ingot");
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public void placeIngot(PlayerInteractEvent.RightClickBlock e) {
-        if (e.getSide().isClient())
-            return;
-        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
-    }
-
-    public boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
+    private boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
         IMultipartContainer container = getPartContainer(world, pos);
         if (container == null) {
             List<AxisAlignedBB> list = new ArrayList<AxisAlignedBB>();
             for (AxisAlignedBB bb : list)
                 if (!world.checkNoEntityCollision(bb.offset(pos.getX(), pos.getY(), pos.getZ()))) return false;
-
             Collection<? extends IMultipart> parts = MultipartRegistry.convert(world, pos, true);
             if (parts != null && !parts.isEmpty()) {
                 TileMultipartContainer tmp = new TileMultipartContainer();
@@ -112,7 +111,6 @@ public class IngotPlacer {
                     tmp.getPartContainer().addPart(p, false, false, false, false, UUID.randomUUID());
                 return tmp.canAddPart(ingot);
             }
-
             return true;
         } else {
             for (IMultipart part : container.getParts()) {
@@ -127,7 +125,7 @@ public class IngotPlacer {
         }
     }
 
-    private EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
+    private EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
         if(stack == null || stack.stackSize <= 0)
             return FAIL;
         if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
@@ -137,6 +135,11 @@ public class IngotPlacer {
                     while (stack.stackSize > 0) {
                         if(stack.stackSize <= 0)
                             break;
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         boolean p = place(world, pos, side, h, stack, player);
                         if (p) {
                             consumeItem(stack);
@@ -156,7 +159,8 @@ public class IngotPlacer {
         }
         return FAIL;
     }
-    public Vec3d nextHit(Vec3d hit) {
+
+    private Vec3d nextHit(Vec3d hit) {
         double x = hit.xCoord;
         double y = hit.yCoord;
         double z = hit.zCoord;
@@ -172,6 +176,7 @@ public class IngotPlacer {
         }
         return new Vec3d(x,y,z);
     }
+
     private boolean place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
         if (side != EnumFacing.UP)
             return false;
@@ -207,7 +212,7 @@ public class IngotPlacer {
             stack.stackSize--;
     }
 
-    public static void drawSelectionBox(EntityPlayer player, RayTraceResult movingObjectPositionIn, int execute, float partialTicks) {
+    private static void drawSelectionBox(EntityPlayer player, RayTraceResult movingObjectPositionIn, int execute, float partialTicks) {
         World world = player.getEntityWorld();
         if (execute == 0 && movingObjectPositionIn.typeOfHit == RayTraceResult.Type.BLOCK) {
             GlStateManager.enableBlend();
@@ -229,13 +234,14 @@ public class IngotPlacer {
 
                 for (int i = 1; i <= 4; i++) {
                     for(int j=1;j<=2;j++) {
-                        if (facing == EnumFacing.Axis.Z) {
+                        //TODO rotating ingots
+//                        if (facing == EnumFacing.Axis.Z) {
 
-                            box = new AxisAlignedBB(x + (i / 4d) - .25, y, z + (.5 * (j - 1)), x + (i / 4d), y,z + j * .5 ).expandXyz(.002d).offset(-d0, -d1, -d2);
-                        }
-                        else {
+//                            box = new AxisAlignedBB(x + (i / 4d) - .25, y, z + (.5 * (j - 1)), x + (i / 4d), y,z + j * .5 ).expandXyz(.002d).offset(-d0, -d1, -d2);
+//                        }
+//                        else {
                             box = new AxisAlignedBB(x + (.5 * (j - 1)), y, z + (i / 4d) - .25, x + j * .5, y, z + (i / 4d)).expandXyz(.002d).offset(-d0, -d1, -d2);
-                        }
+//                        }
 
                         drawLine(box);
                     }
@@ -248,7 +254,7 @@ public class IngotPlacer {
         }
     }
 
-    public static void drawLine(AxisAlignedBB boundingBox) {
+    private static void drawLine(AxisAlignedBB boundingBox) {
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer vertexbuffer = tessellator.getBuffer();
         vertexbuffer.begin(3, DefaultVertexFormats.POSITION);

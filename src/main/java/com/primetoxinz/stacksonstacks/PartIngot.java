@@ -1,13 +1,12 @@
 package com.primetoxinz.stacksonstacks;
 
 import mcmultipart.MCMultiPartMod;
-import mcmultipart.multipart.IMultipart;
-import mcmultipart.multipart.INormallyOccludingPart;
-import mcmultipart.multipart.Multipart;
+import mcmultipart.multipart.*;
 import mcmultipart.raytrace.PartMOP;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,6 +14,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -25,8 +25,7 @@ import org.lwjgl.util.vector.Vector3f;
 import pl.asie.charset.lib.render.IRenderComparable;
 import pl.asie.charset.lib.utils.GenericExtendedProperty;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 
@@ -39,7 +38,10 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     public IngotLocation location;
     public IngotType type;
-    public PartIngot() {}
+    public PartIngot() {
+        location = null;
+        type = null;
+    }
 
     public PartIngot(IngotLocation location, IngotType type) {
         this.location = location;
@@ -94,7 +96,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public IBlockState getExtendedState(IBlockState state) {
         return ((IExtendedBlockState) state).withProperty(PROPERTY, this);
     }
-
+    public static final ResourceLocation LOCATION =new ModelResourceLocation(SoS.MODID+":partIngot", "multipart") ;
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if(location != null)
@@ -136,22 +138,34 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     @Override
     public void harvest(EntityPlayer player, PartMOP hit) {
         if( player != null && player.isSneaking()) {
-            dropAll();
+            dropAll(MultipartHelper.getPartContainer(player.worldObj,hit.getBlockPos()));
         } else {
             super.harvest(player,hit);
         }
     }
-    public void dropAll() {
+
+    public void dropAll(IMultipartContainer container) {
         new Thread(() -> {
-            for (IMultipart part : getContainer().getParts()) {
-                if (part instanceof PartIngot)
-                    ((PartIngot) part).drop();
+            try {
+                Collection c = container.getParts();
+                Iterator<IMultipart> iter = c.iterator();
+                while (iter.hasNext()) {
+
+                    IMultipart part = iter.next();
+                    if (part instanceof PartIngot)
+                        ((PartIngot) part).drop();
+                }
+            } catch(ConcurrentModificationException e) {
+                e.printStackTrace();
             }
         }).start();
     }
+
     public void drop() {
         World world = getWorld();
         BlockPos pos = getPos();
+        if(world == null || pos == null)
+            return;
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
         if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops") && !world.restoringBlockSnapshots) {
             for (ItemStack stack : getDrops()) {

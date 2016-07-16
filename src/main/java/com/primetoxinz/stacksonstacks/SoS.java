@@ -22,5 +22,4 @@ public class SoS {
         MultipartRegistry.registerPart(PartIngot.class, "partIngot");
         proxy.pre(e);
     }
-
 }

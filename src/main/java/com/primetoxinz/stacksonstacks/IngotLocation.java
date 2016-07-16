@@ -6,9 +6,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import org.lwjgl.util.vector.Vector3f;
 
-/**
- * Created by tyler on 6/4/16.
- */
 public class IngotLocation {
     protected float x, y, z;
     protected EnumFacing.Axis axis;

@@ -93,19 +93,19 @@ public abstract class ModelFactory<T extends IRenderComparable<T>> extends BaseB
             return null;
         }
 
-        ModelKey<T> key = new ModelKey<>(object, layer);
-        if (DISABLE_CACHE) {
+//        ModelKey<T> key = new ModelKey<>(object, layer);
+//        if (DISABLE_CACHE) {
             return bake(object, layer == null, layer);
-        } else {
-            IBakedModel model = cache.getIfPresent(key);
-            if (model != null) {
-                return model;
-            } else {
-                model = bake(object, layer == null, layer);
-                cache.put(key, model);
-                return model;
-            }
-        }
+//        } else {
+//            IBakedModel model = cache.getIfPresent(key);
+//            if (model != null) {
+//                return model;
+//            } else {
+//                model = bake(object, layer == null, layer);
+//                cache.put(key, model);
+//                return model;
+//            }
+//        }
     }
 
     @Override
