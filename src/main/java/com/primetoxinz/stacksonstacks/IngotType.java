@@ -1,12 +1,11 @@
 package com.primetoxinz.stacksonstacks;
 
+import lib.utils.RenderUtils;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import lib.utils.RenderUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,9 +14,7 @@ import static lib.utils.RenderUtils.AveragingMode.FULL;
 
 public class IngotType {
     public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();
-
     public ItemStack stack;
-    public ResourceLocation texture_override;
     public int color;
     public IngotType(ItemStack stack) {
         if(stack != null) {
@@ -28,7 +25,7 @@ public class IngotType {
 
         if(stack != null) {
 
-            DummyStack dummy = getDummy(stack);
+            DummyStack dummy = new DummyStack(stack);
             if (colorCache.containsKey(dummy)) {
                 color = colorCache.get(dummy);
             } else {
@@ -36,7 +33,6 @@ public class IngotType {
                 color = RenderUtils.getAverageColor(sprite, FULL);
                 colorCache.put(dummy, color);
             }
-
         }
     }
 
@@ -44,12 +40,14 @@ public class IngotType {
         if(stack != null)
             stack.writeToNBT(tag);
         tag.setInteger("color",color);
+
         return tag;
     }
     public static IngotType readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
         IngotType type = new IngotType(stack);
         type.color = tag.getInteger("color");
+
         return type;
     }
 
@@ -73,9 +71,7 @@ public class IngotType {
         return color;
     }
 
-    public static DummyStack getDummy(ItemStack stack) {
-        return new DummyStack(stack.getItem(),stack.getMetadata());
-    }
+
     public static class DummyStack {
         Item item;
         int meta;

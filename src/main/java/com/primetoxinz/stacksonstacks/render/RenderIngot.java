@@ -1,7 +1,9 @@
 package com.primetoxinz.stacksonstacks.render;
 
-import com.google.common.base.Function;
 import com.primetoxinz.stacksonstacks.PartIngot;
+import lib.render.ModelFactory;
+import lib.render.SimpleBakedModel;
+import lib.utils.RenderUtils;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -12,8 +14,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Vector3f;
-import lib.render.ModelFactory;
-import lib.render.SimpleBakedModel;
 
 import java.awt.*;
 
@@ -24,9 +24,9 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     private TextureAtlasSprite sprite;
     private VertexFormat format;
 
-    public RenderIngot(VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+    public RenderIngot(VertexFormat format) {
         super(PartIngot.PROPERTY, TEXTURE);
-        sprite = bakedTextureGetter.apply(TEXTURE);
+        sprite = RenderUtils.textureGetter.apply(TEXTURE);
         this.format = format;
     }
 
@@ -58,20 +58,21 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     }
 
     private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
-        Vec3d normal = v1.subtract(v2).crossProduct(v3.subtract(v2));
+        Vec3d normal = new Vec3d(0,1,0);//.subtract(v2).crossProduct(v3.subtract(v2));
         CustomQuad.Builder builder = new CustomQuad.Builder(format);
         builder.setTexture(sprite);
         builder.setQuadTint(color);
+        builder.setApplyDiffuseLighting(false);
         if(side == WEST || side == NORTH || side == UP) {
-            putVertex(builder, v1, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
-            putVertex(builder, v2, v2.xCoord, v2.yCoord, v2.zCoord, 0, 16);
-            putVertex(builder, v3, v3.xCoord, v3.yCoord, v3.zCoord, 16, 16);
-            putVertex(builder, v4, v4.xCoord, v4.yCoord, v4.zCoord, 0, 0);
+            putVertex(builder, normal, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
+            putVertex(builder, normal, v2.xCoord, v2.yCoord, v2.zCoord, 0, 16);
+            putVertex(builder, normal, v3.xCoord, v3.yCoord, v3.zCoord, 16, 16);
+            putVertex(builder, normal, v4.xCoord, v4.yCoord, v4.zCoord, 16, 0);
         } else {
-            putVertex(builder, v1, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
-            putVertex(builder, v2, v2.xCoord, v2.yCoord, v2.zCoord, 16, 0);
-            putVertex(builder, v3, v3.xCoord, v3.yCoord, v3.zCoord, 16, 16);
-            putVertex(builder, v4, v4.xCoord, v4.yCoord, v4.zCoord, 0, 16);
+            putVertex(builder, normal, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
+            putVertex(builder, normal, v2.xCoord, v2.yCoord, v2.zCoord, 16, 0);
+            putVertex(builder, normal, v3.xCoord, v3.yCoord, v3.zCoord, 16, 16);
+            putVertex(builder, normal, v4.xCoord, v4.yCoord, v4.zCoord, 0, 16);
         }
         return builder.build();
     }
@@ -96,6 +97,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
     @Override
     public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
+
         Vector3f loc = ingot.location.getRelativeLocation();
         float o = 0.1f/16;
         return createRectPrism(loc.x+o, loc.y, loc.z+o, .5f-2*o, 0.125f, .25f-2*o, ingot.type.getColor());

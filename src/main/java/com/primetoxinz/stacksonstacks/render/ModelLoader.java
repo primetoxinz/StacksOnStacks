@@ -54,7 +54,7 @@ public class ModelLoader implements ICustomModelLoader {
 
         @Override
         public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-            return new RenderIngot(format,bakedTextureGetter);
+            return new RenderIngot(format);
         }
 
         @Override

@@ -1,5 +1,7 @@
 package com.primetoxinz.stacksonstacks;
 
+import lib.render.IRenderComparable;
+import lib.utils.GenericExtendedProperty;
 import mcmultipart.MCMultiPartMod;
 import mcmultipart.multipart.*;
 import mcmultipart.raytrace.PartMOP;
@@ -22,8 +24,6 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import org.lwjgl.util.vector.Vector3f;
-import lib.render.IRenderComparable;
-import lib.utils.GenericExtendedProperty;
 
 import java.util.*;
 
@@ -145,8 +145,9 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     }
 
     public void dropAll(IMultipartContainer container) {
+        try {
         new Thread(() -> {
-            try {
+
                 Collection c = container.getParts();
                 Iterator<IMultipart> iter = c.iterator();
                 while (iter.hasNext()) {
@@ -155,10 +156,11 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
                     if (part instanceof PartIngot)
                         ((PartIngot) part).drop();
                 }
-            } catch(ConcurrentModificationException e) {
-                e.printStackTrace();
-            }
+
         }).start();
+        } catch (ConcurrentModificationException e) {
+            e.printStackTrace();
+        }
     }
 
     public void drop() {
@@ -174,8 +176,12 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
                 world.spawnEntityInWorld(item);
             }
         }
-        if(getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
-        getContainer().removePart(this);
+        try {
+            if (getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
+                getContainer().removePart(this);
+        } catch (ConcurrentModificationException e) {
+            e.printStackTrace();
+        }
     }
 
     public IngotLocation getLocation() {

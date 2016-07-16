@@ -31,7 +31,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.*;
@@ -82,26 +85,48 @@ public class IngotPlacer {
         return loc;
     }
 
-    private boolean canBeIngot(ItemStack stack) {
-//        System.out.println(canBeIngot);
+    private static  boolean canBeIngot(ItemStack stack) {
         if (stack == null)
             return false;
         IngotType.DummyStack dummy = new IngotType.DummyStack(stack);
         if(canBeIngot.contains(dummy)) {
             return true;
         } else {
-            int[] ids = OreDictionary.getOreIDs(stack);
-            for (int id : ids) {
-                String name = OreDictionary.getOreName(id);
-                if (name.startsWith("ingot")) {
-                    canBeIngot.add(dummy);
-                    return true;
-                }
-            }
-            return false;
+            return getOreDictionaryNameStartingWith(stack,"ingot") != null;
         }
     }
 
+    public static  String[] getItemStackOreNames(ItemStack stack) {
+        int[] ids = OreDictionary.getOreIDs(stack);
+        String[] names= new String[ids.length];
+        for(int i = 0; i < ids.length;i++)
+            names[i] = OreDictionary.getOreName(ids[i]);
+        return names;
+    }
+    public static  String getOreDictionaryNameStartingWith(ItemStack stack, String start) {
+        if(stack != null) {
+            for (String name : getItemStackOreNames(stack))
+                if (name.startsWith(start))
+                    return name;
+        } else {
+            for(String name:OreDictionary.getOreNames())
+                if(name.startsWith(start))
+                    return name;
+        }
+        return null;
+    }
+    public static ItemStack getCompressIngotBlock(ItemStack stack) {
+        if(canBeIngot(stack)) {
+            String ingot = getOreDictionaryNameStartingWith(stack, "ingot");
+            if(ingot != null) {
+                String block = getOreDictionaryNameStartingWith(null,ingot.replace("ingot", "block"));
+                List<ItemStack> blocks = OreDictionary.getOres(block);
+                if(blocks != null && !blocks.isEmpty())
+                    return blocks.get(0);
+            }
+        }
+        return null;
+    }
     private boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
         IMultipartContainer container = getPartContainer(world, pos);
         if (container == null) {
