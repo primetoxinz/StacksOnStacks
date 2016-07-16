@@ -33,6 +33,7 @@ import static mcmultipart.multipart.MultipartHelper.getPartContainer;
  */
 
 public class PartIngot extends Multipart implements IRenderComparable<PartIngot>, INormallyOccludingPart {
+
     public static final GenericExtendedProperty<PartIngot> PROPERTY = new GenericExtendedProperty<PartIngot>("part",PartIngot.class);
 
     public IngotLocation location;
@@ -186,11 +187,5 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public int renderHashCode() {
         return 0;
     }
-
-    @Override
-    public boolean occlusionTest(IMultipart part) {
-        return super.occlusionTest(part);
-    }
-
 
 }

@@ -30,7 +30,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.property.IExtendedBlockState;
@@ -67,8 +66,7 @@ public abstract class ModelFactory<T extends IRenderComparable<T>> extends BaseB
     private final Cache<ModelKey<T>, IBakedModel> cache;
     private final IUnlistedProperty<T> property;
 
-    protected ModelFactory(IUnlistedProperty<T> property, ResourceLocation particle) {
-        super(particle);
+    protected ModelFactory(IUnlistedProperty<T> property) {
         this.FACTORIES.add(this);
 
         this.cache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();

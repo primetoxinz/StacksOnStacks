@@ -38,7 +38,6 @@ public class ModelLoader implements ICustomModelLoader {
 
     @Override
     public void onResourceManagerReload(IResourceManager resourceManager) {
-
     }
     public static class Model implements IModel {
 
@@ -49,7 +48,7 @@ public class ModelLoader implements ICustomModelLoader {
 
         @Override
         public Collection<ResourceLocation> getTextures() {
-            return ImmutableSet.of(RenderIngot.TEXTURE);
+            return ImmutableSet.of(RenderIngot.DEFAULT_TEXTURE);
         }
 
         @Override

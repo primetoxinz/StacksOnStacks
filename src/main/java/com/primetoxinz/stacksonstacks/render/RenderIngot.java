@@ -1,5 +1,6 @@
 package com.primetoxinz.stacksonstacks.render;
 
+import com.primetoxinz.stacksonstacks.Config;
 import com.primetoxinz.stacksonstacks.PartIngot;
 import lib.render.ModelFactory;
 import lib.render.SimpleBakedModel;
@@ -20,17 +21,17 @@ import java.awt.*;
 import static net.minecraft.util.EnumFacing.*;
 
 public class RenderIngot extends ModelFactory<PartIngot> {
-    public static final ResourceLocation TEXTURE = new ResourceLocation("stacksonstacks","blocks/ingot");
+    public static ResourceLocation DEFAULT_TEXTURE = new ResourceLocation("stacksonstacks", "blocks/ingot" + Config.textureVersion);
     private TextureAtlasSprite sprite;
     private VertexFormat format;
 
     public RenderIngot(VertexFormat format) {
-        super(PartIngot.PROPERTY, TEXTURE);
-        sprite = RenderUtils.textureGetter.apply(TEXTURE);
+        super(PartIngot.PROPERTY);
         this.format = format;
     }
 
     private void putVertex(CustomQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
+
         Color c = new Color(builder.getTint());
         for (int e = 0; e < format.getElementCount(); e++) {
             switch (format.getElement(e).getUsage()) {
@@ -38,7 +39,10 @@ public class RenderIngot extends ModelFactory<PartIngot> {
                     builder.put(e, (float) x, (float) y, (float) z, 1.0f);
                     break;
                 case COLOR:
-                    builder.put(e, c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f, 1.0f);
+                    if (builder.getTint() == 0)
+                        builder.put(e, 1, 1, 1, 1.0f);
+                    else
+                        builder.put(e, c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
                     break;
                 case UV:
                     if (format.getElement(e).getIndex() == 0) {
@@ -58,7 +62,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     }
 
     private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
-        Vec3d normal = new Vec3d(0,1,0);//.subtract(v2).crossProduct(v3.subtract(v2));
+        Vec3d normal = new Vec3d(0,0,1);
         CustomQuad.Builder builder = new CustomQuad.Builder(format);
         builder.setTexture(sprite);
         builder.setQuadTint(color);
@@ -97,7 +101,12 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
     @Override
     public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
-
+        String tex = ingot.type.getSprite();
+        if (tex.isEmpty()) {
+            sprite = RenderUtils.textureGetter.apply(DEFAULT_TEXTURE);
+        } else {
+            sprite = RenderUtils.textureGetter.apply(new ResourceLocation(tex));
+        }
         Vector3f loc = ingot.location.getRelativeLocation();
         float o = 0.1f/16;
         return createRectPrism(loc.x+o, loc.y, loc.z+o, .5f-2*o, 0.125f, .25f-2*o, ingot.type.getColor());

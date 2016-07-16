@@ -40,7 +40,7 @@ import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.*;
 
 public class IngotPlacer {
-    public static ArrayList<IngotType.DummyStack> canBeIngot = new ArrayList<>();
+    public static ArrayList<IngotType.DummyStack> ingotRegistry = new ArrayList<>();
 
     @SubscribeEvent(priority = EventPriority.LOW)
     @SideOnly(Side.CLIENT)
@@ -89,7 +89,7 @@ public class IngotPlacer {
         if (stack == null)
             return false;
         IngotType.DummyStack dummy = new IngotType.DummyStack(stack);
-        if(canBeIngot.contains(dummy)) {
+        if(ingotRegistry.contains(dummy)) {
             return true;
         } else {
             return getOreDictionaryNameStartingWith(stack,"ingot") != null;
@@ -107,10 +107,6 @@ public class IngotPlacer {
         if(stack != null) {
             for (String name : getItemStackOreNames(stack))
                 if (name.startsWith(start))
-                    return name;
-        } else {
-            for(String name:OreDictionary.getOreNames())
-                if(name.startsWith(start))
                     return name;
         }
         return null;

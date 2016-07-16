@@ -18,9 +18,12 @@ public class SoS {
     private static final String PROXY = "com.primetoxinz.stacksonstacks.proxy.";
     @SidedProxy( modId = MODID,clientSide = PROXY+"ClientProxy",serverSide = PROXY+"CommonProxy")
     public static com.primetoxinz.stacksonstacks.proxy.CommonProxy proxy;
-    
+
+    public static Config config;
     @Mod.EventHandler
     public void pre(FMLPreInitializationEvent e) {
+        config = new Config(e.getSuggestedConfigurationFile());
+        config.pre();
         MinecraftForge.EVENT_BUS.register(new IngotPlacer());
         MultipartRegistry.registerPart(PartIngot.class, "partIngot");
         proxy.pre(e);

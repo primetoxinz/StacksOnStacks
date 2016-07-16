@@ -22,7 +22,7 @@ group = config.group // http://maven.apache.org/guides/mini/guide-naming-convent
 archivesBaseName = config.mod_name
 
 minecraft {
-    version = "${config.mc_version}-${config.forge_version}-${config.mc_version_suffix}"
+    version = "${config.mc_version}-${config.forge_version}"
     runDir = "run"
     mappings = config.mc_mappings
     replace '@MC_VERSION@', config.accepted_version
