@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pl.asie.charset.lib.render;
+package lib.render;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -23,7 +23,7 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
-import pl.asie.charset.lib.utils.RenderUtils;
+import lib.utils.RenderUtils;
 
 import java.util.ArrayList;
 import java.util.List;

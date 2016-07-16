@@ -6,12 +6,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
-import pl.asie.charset.lib.utils.RenderUtils;
+import lib.utils.RenderUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import static pl.asie.charset.lib.utils.RenderUtils.AveragingMode.FULL;
+import static lib.utils.RenderUtils.AveragingMode.FULL;
 
 public class IngotType {
     public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pl.asie.charset.lib.render;
+package lib.render;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

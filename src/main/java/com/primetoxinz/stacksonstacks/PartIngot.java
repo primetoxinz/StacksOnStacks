@@ -22,8 +22,8 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import org.lwjgl.util.vector.Vector3f;
-import pl.asie.charset.lib.render.IRenderComparable;
-import pl.asie.charset.lib.utils.GenericExtendedProperty;
+import lib.render.IRenderComparable;
+import lib.utils.GenericExtendedProperty;
 
 import java.util.*;
 
@@ -195,12 +195,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public int renderHashCode() {
         return 0;
     }
-
-    @Override
-    public int getLightValue() {
-        return 15;
-    }
-
+    
     @Override
     public boolean occlusionTest(IMultipart part) {
         return super.occlusionTest(part);

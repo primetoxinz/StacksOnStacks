@@ -12,8 +12,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Vector3f;
-import pl.asie.charset.lib.render.ModelFactory;
-import pl.asie.charset.lib.render.SimpleBakedModel;
+import lib.render.ModelFactory;
+import lib.render.SimpleBakedModel;
 
 import java.awt.*;
 

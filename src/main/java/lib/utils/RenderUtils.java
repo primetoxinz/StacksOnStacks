@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pl.asie.charset.lib.utils;
+package lib.utils;
 
 import com.google.common.base.Function;
 import net.minecraft.client.Minecraft;

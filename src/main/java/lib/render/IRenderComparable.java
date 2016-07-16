@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pl.asie.charset.lib.render;
+package lib.render;
 
 public interface IRenderComparable<T> {
     boolean renderEquals(T other);

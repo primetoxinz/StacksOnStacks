@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pl.asie.charset.lib.render;
+package lib.render;
 
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -23,7 +23,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.model.TRSRTransformation;
-import pl.asie.charset.lib.utils.RenderUtils;
+import lib.utils.RenderUtils;
 
 import java.util.EnumMap;
 
