@@ -1,4 +1,4 @@
-package com.primetoxinz.stacksonstacks;
+package com.primetoxinz.stacksonstacks.logic;
 
 import mcmultipart.block.TileMultipartContainer;
 import mcmultipart.multipart.IMultipart;
@@ -31,10 +31,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.*;
@@ -46,19 +43,14 @@ public class IngotPlacer {
     @SideOnly(Side.CLIENT)
     public final void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
         EntityPlayer player = event.getPlayer();
-        ItemStack main = player.getHeldItemMainhand();
-        ItemStack off = player.getHeldItemOffhand();
-        BlockPos pos = event.getTarget().getBlockPos();
-        float partialTicks = event.getPartialTicks();
-        if (canBeIngot(main) || canBeIngot(off)) {
-            drawSelectionBox(player, event.getTarget(), 0, partialTicks);
+        if (canBeIngot(player.getHeldItemMainhand()) || canBeIngot(player.getHeldItemOffhand())) {
+            drawSelectionBox(player, event.getTarget(), 0,  event.getPartialTicks());
         }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public final void placeIngot(PlayerInteractEvent.RightClickBlock e) {
-        if (e.getSide().isClient())
-            return;
+        if (e.getSide().isServer())
         onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
     }
 
@@ -85,7 +77,7 @@ public class IngotPlacer {
         return loc;
     }
 
-    private static  boolean canBeIngot(ItemStack stack) {
+    private static boolean canBeIngot(ItemStack stack) {
         if (stack == null)
             return false;
         IngotType.DummyStack dummy = new IngotType.DummyStack(stack);
@@ -104,22 +96,22 @@ public class IngotPlacer {
         return names;
     }
     public static  String getOreDictionaryNameStartingWith(ItemStack stack, String start) {
+        String value = null;
         if(stack != null) {
-            for (String name : getItemStackOreNames(stack))
-                if (name.startsWith(start))
-                    return name;
+            Collection<String> names = Arrays.asList(getItemStackOreNames(stack));
+            Optional<String> ore = names.stream().filter(name -> name.startsWith(start)).findFirst();
+            if(ore.isPresent())
+                value = ore.get();
         }
-        return null;
+        return value;
     }
     public static ItemStack getCompressIngotBlock(ItemStack stack) {
-        if(canBeIngot(stack)) {
-            String ingot = getOreDictionaryNameStartingWith(stack, "ingot");
-            if(ingot != null) {
-                String block = getOreDictionaryNameStartingWith(null,ingot.replace("ingot", "block"));
-                List<ItemStack> blocks = OreDictionary.getOres(block);
-                if(blocks != null && !blocks.isEmpty())
-                    return blocks.get(0);
-            }
+        String ingot = getOreDictionaryNameStartingWith(stack, "ingot");
+        if(ingot != null) {
+            String block = getOreDictionaryNameStartingWith(null,ingot.replace("ingot", "block"));
+            List<ItemStack> blocks = OreDictionary.getOres(block);
+            if(blocks != null && !blocks.isEmpty())
+                return blocks.get(0);
         }
         return null;
     }
@@ -138,14 +130,6 @@ public class IngotPlacer {
             }
             return true;
         } else {
-            for (IMultipart part : container.getParts()) {
-                if (part instanceof PartIngot) {
-                    PartIngot i = (PartIngot) part;
-                    if (i.getLocation().equals(ingot)) {
-                        return false;
-                    }
-                }
-            }
             return container.canAddPart(ingot);
         }
     }

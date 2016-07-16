@@ -16,8 +16,6 @@
 
 package lib.render;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -38,10 +36,9 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public abstract class ModelFactory<T extends IRenderComparable<T>> extends BaseBakedModel {
-    private static final boolean DISABLE_CACHE = true;
+
     private static final Set<ModelFactory> FACTORIES = new HashSet<>();
 
     private static class MFItemOverride extends ItemOverrideList {
@@ -63,21 +60,14 @@ public abstract class ModelFactory<T extends IRenderComparable<T>> extends BaseB
         }
     }
 
-    private final Cache<ModelKey<T>, IBakedModel> cache;
+
     private final IUnlistedProperty<T> property;
 
     protected ModelFactory(IUnlistedProperty<T> property) {
         this.FACTORIES.add(this);
-
-        this.cache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
         this.property = property;
     }
 
-    public static void clearCaches() {
-        for (ModelFactory factory : FACTORIES) {
-            factory.cache.invalidateAll();
-        }
-    }
 
     public IUnlistedProperty<T> getProperty() {
         return property;
@@ -91,19 +81,8 @@ public abstract class ModelFactory<T extends IRenderComparable<T>> extends BaseB
             return null;
         }
 
-//        ModelKey<T> key = new ModelKey<>(object, layer);
-//        if (DISABLE_CACHE) {
             return bake(object, layer == null, layer);
-//        } else {
-//            IBakedModel model = cache.getIfPresent(key);
-//            if (model != null) {
-//                return model;
-//            } else {
-//                model = bake(object, layer == null, layer);
-//                cache.put(key, model);
-//                return model;
-//            }
-//        }
+
     }
 
     @Override

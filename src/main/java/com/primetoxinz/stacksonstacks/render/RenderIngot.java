@@ -1,7 +1,7 @@
 package com.primetoxinz.stacksonstacks.render;
 
 import com.primetoxinz.stacksonstacks.Config;
-import com.primetoxinz.stacksonstacks.PartIngot;
+import com.primetoxinz.stacksonstacks.logic.PartIngot;
 import lib.render.ModelFactory;
 import lib.render.SimpleBakedModel;
 import lib.utils.RenderUtils;
@@ -62,7 +62,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     }
 
     private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
-        Vec3d normal = new Vec3d(0,0,1);
+        Vec3d normal = new Vec3d(1,1,1);
         CustomQuad.Builder builder = new CustomQuad.Builder(format);
         builder.setTexture(sprite);
         builder.setQuadTint(color);

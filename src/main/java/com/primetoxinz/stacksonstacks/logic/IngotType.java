@@ -1,5 +1,6 @@
-package com.primetoxinz.stacksonstacks;
+package com.primetoxinz.stacksonstacks.logic;
 
+import com.primetoxinz.stacksonstacks.Config;
 import com.primetoxinz.stacksonstacks.render.RenderIngot;
 import lib.utils.RenderUtils;
 import net.minecraft.item.Item;

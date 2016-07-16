@@ -1,5 +1,7 @@
 package com.primetoxinz.stacksonstacks;
 
+import com.primetoxinz.stacksonstacks.logic.IngotPlacer;
+import com.primetoxinz.stacksonstacks.logic.PartIngot;
 import mcmultipart.multipart.MultipartRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;

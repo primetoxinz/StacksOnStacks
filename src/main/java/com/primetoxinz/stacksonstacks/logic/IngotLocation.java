@@ -1,4 +1,4 @@
-package com.primetoxinz.stacksonstacks;
+package com.primetoxinz.stacksonstacks.logic;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;

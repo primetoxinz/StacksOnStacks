@@ -1,5 +1,6 @@
-package com.primetoxinz.stacksonstacks;
+package com.primetoxinz.stacksonstacks.logic;
 
+import com.primetoxinz.stacksonstacks.SoS;
 import lib.render.IRenderComparable;
 import lib.utils.GenericExtendedProperty;
 import mcmultipart.MCMultiPartMod;
