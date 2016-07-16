@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
@@ -89,7 +88,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public List<ItemStack> getDrops() {
         if(type != null && type.stack != null)
             return Arrays.asList(type.stack);
-        return Arrays.asList(new ItemStack(Blocks.DIRT));
+        return Collections.emptyList();
     }
 
     @Override
@@ -145,22 +144,13 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     }
 
     public void dropAll(IMultipartContainer container) {
-        try {
-        new Thread(() -> {
-
-                Collection c = container.getParts();
-                Iterator<IMultipart> iter = c.iterator();
-                while (iter.hasNext()) {
-
-                    IMultipart part = iter.next();
-                    if (part instanceof PartIngot)
-                        ((PartIngot) part).drop();
-                }
-
-        }).start();
-        } catch (ConcurrentModificationException e) {
-            e.printStackTrace();
-        }
+           Collection c = container.getParts();
+           Iterator<IMultipart> iter = c.iterator();
+           while (iter.hasNext()) {
+                IMultipart part = iter.next();
+                if (part instanceof PartIngot)
+                     ((PartIngot) part).drop();
+           }
     }
 
     public void drop() {
@@ -170,18 +160,13 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
             return;
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
         if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops") && !world.restoringBlockSnapshots) {
-            for (ItemStack stack : getDrops()) {
-                EntityItem item = new EntityItem(world, x, y, z, stack);
+            EntityItem item = new EntityItem(world, x, y, z, getDrops().get(0));
                 item.setDefaultPickupDelay();
                 world.spawnEntityInWorld(item);
-            }
         }
-        try {
-            if (getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
+        if (getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
                 getContainer().removePart(this);
-        } catch (ConcurrentModificationException e) {
-            e.printStackTrace();
-        }
+
     }
 
     public IngotLocation getLocation() {
