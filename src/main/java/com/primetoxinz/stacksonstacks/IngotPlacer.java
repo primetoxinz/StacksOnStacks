@@ -31,17 +31,15 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.*;
 
 public class IngotPlacer {
+    public static ArrayList<IngotType.DummyStack> canBeIngot = new ArrayList<>();
 
-    @SubscribeEvent(priority = EventPriority.HIGH)
+    @SubscribeEvent(priority = EventPriority.LOW)
     @SideOnly(Side.CLIENT)
     public final void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
         EntityPlayer player = event.getPlayer();
@@ -49,7 +47,6 @@ public class IngotPlacer {
         ItemStack off = player.getHeldItemOffhand();
         BlockPos pos = event.getTarget().getBlockPos();
         float partialTicks = event.getPartialTicks();
-
         if (canBeIngot(main) || canBeIngot(off)) {
             drawSelectionBox(player, event.getTarget(), 0, partialTicks);
         }
@@ -86,16 +83,23 @@ public class IngotPlacer {
     }
 
     private boolean canBeIngot(ItemStack stack) {
+//        System.out.println(canBeIngot);
         if (stack == null)
             return false;
-        int[] ids = OreDictionary.getOreIDs(stack);
-        for(int id: ids) {
-            String name = OreDictionary.getOreName(id);
-            if(name.startsWith("ingot")) {
-                return true;
+        IngotType.DummyStack dummy = new IngotType.DummyStack(stack);
+        if(canBeIngot.contains(dummy)) {
+            return true;
+        } else {
+            int[] ids = OreDictionary.getOreIDs(stack);
+            for (int id : ids) {
+                String name = OreDictionary.getOreName(id);
+                if (name.startsWith("ingot")) {
+                    canBeIngot.add(dummy);
+                    return true;
+                }
             }
+            return false;
         }
-        return  stack.getUnlocalizedName().contains("ingot");
     }
 
     private boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
@@ -127,7 +131,7 @@ public class IngotPlacer {
 
     private EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
         if(stack == null || stack.stackSize <= 0)
-            return FAIL;
+            return PASS;
         if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
             if (player.isSneaking()) {
                 Thread thread = new Thread(() -> {

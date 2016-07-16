@@ -79,6 +79,9 @@ public class IngotType {
     public static class DummyStack {
         Item item;
         int meta;
+        public DummyStack(ItemStack stack) {
+            this(stack.getItem(), stack.getMetadata());
+        }
         public  DummyStack(Item item, int meta) {
             this.item = item;
             this.meta = meta;
