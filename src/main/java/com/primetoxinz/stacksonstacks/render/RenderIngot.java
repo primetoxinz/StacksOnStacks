@@ -62,7 +62,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     }
 
     private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
-        Vec3d normal = new Vec3d(1,1,1);
+        Vec3d normal = new Vec3d(0,0,1);
         CustomQuad.Builder builder = new CustomQuad.Builder(format);
         builder.setTexture(sprite);
         builder.setQuadTint(color);
@@ -101,12 +101,8 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
     @Override
     public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
-        String tex = ingot.type.getSprite();
-        if (tex.isEmpty()) {
-            sprite = RenderUtils.textureGetter.apply(DEFAULT_TEXTURE);
-        } else {
-            sprite = RenderUtils.textureGetter.apply(new ResourceLocation(tex));
-        }
+        TextureAtlasSprite tex = ingot.type.getSprite();
+        sprite = tex != null ? tex:RenderUtils.textureGetter.apply(DEFAULT_TEXTURE);
         Vector3f loc = ingot.location.getRelativeLocation();
         float o = 0.1f/16;
         return createRectPrism(loc.x+o, loc.y, loc.z+o, .5f-2*o, 0.125f, .25f-2*o, ingot.type.getColor());

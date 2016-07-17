@@ -25,7 +25,10 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import org.lwjgl.util.vector.Vector3f;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 
@@ -146,8 +149,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     }
 
     public void dropAll(IMultipartContainer container) {
-           Collection c = container.getParts();
-           Iterator<IMultipart> iter = c.iterator();
+           Iterator<IMultipart> iter = (Iterator<IMultipart>) container.getParts().iterator();
            while (iter.hasNext()) {
                 IMultipart part = iter.next();
                 if (part instanceof PartIngot)
@@ -168,6 +170,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         }
         if (getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
                 getContainer().removePart(this);
+        notifyBlockUpdate();
 
     }
 

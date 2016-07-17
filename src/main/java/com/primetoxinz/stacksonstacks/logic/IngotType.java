@@ -3,7 +3,7 @@ package com.primetoxinz.stacksonstacks.logic;
 import com.primetoxinz.stacksonstacks.Config;
 import com.primetoxinz.stacksonstacks.render.RenderIngot;
 import lib.utils.RenderUtils;
-import net.minecraft.item.Item;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
@@ -13,12 +13,11 @@ import java.util.HashMap;
 
 public class IngotType {
     public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();
-    public static HashMap<DummyStack,String> spriteCache = new HashMap<>();
+    public static HashMap<DummyStack,TextureAtlasSprite> spriteCache = new HashMap<>();
     public ItemStack stack;
     public int color;
 
-
-    public String sprite;
+    public String spriteName;
     public IngotType(ItemStack stack) {
         if(stack != null) {
             stack = stack.copy();
@@ -28,11 +27,10 @@ public class IngotType {
         this.stack = stack;
         if(stack != null) {
             findColor();
-
             if(Config.useIngotBlockTexture)
                 findTexture();
             else
-                sprite = RenderIngot.DEFAULT_TEXTURE.toString();
+                spriteName = RenderIngot.DEFAULT_TEXTURE.toString();
         }
     }
 
@@ -47,19 +45,21 @@ public class IngotType {
     }
 
     public void findTexture() {
+
         DummyStack dummy = getDummy();
         if(spriteCache.containsKey(dummy)) {
-            sprite = spriteCache.get(dummy);
+            spriteName = spriteCache.get(dummy).getIconName();
         } else {
-            ItemStack compress = IngotPlacer.getCompressIngotBlock(stack);
+            ItemStack compress = OreDictUtil.getCompressIngotBlock(stack);
+            TextureAtlasSprite sprite;
             if(compress != null) {
-                sprite = RenderUtils.getSprite(compress).getIconName();
+                sprite = RenderUtils.getSprite(compress);
                 colorCache.put(dummy,0);
             } else {
-                sprite = RenderUtils.textureGetter.apply(RenderIngot.DEFAULT_TEXTURE).getIconName();
+                sprite = RenderUtils.textureGetter.apply(RenderIngot.DEFAULT_TEXTURE);
             }
-            System.out.println(sprite);
             spriteCache.put(dummy,sprite);
+            spriteName = sprite.getIconName();
         }
     }
 
@@ -67,23 +67,23 @@ public class IngotType {
         if(stack != null)
             stack.writeToNBT(tag);
         tag.setInteger("color",color);
-        if(sprite != null)
-        tag.setString("sprite",sprite);
+        if(spriteName != null)
+        tag.setString("sprite",spriteName);
         return tag;
     }
     public static IngotType readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
         IngotType type = new IngotType(stack);
         type.color = tag.getInteger("color");
-        type.sprite = tag.getString("sprite");
+        type.spriteName = tag.getString("sprite");
         return type;
     }
 
     public void writeUpdatePacket(PacketBuffer buf) {
         buf.writeItemStackToBuffer(stack);
         buf.writeInt(color);
-        buf.writeInt(sprite.length());
-        buf.writeString(sprite);
+        buf.writeInt(spriteName.length());
+        buf.writeString(spriteName);
     }
 
     public static IngotType readUpdatePacket(PacketBuffer buf) {
@@ -96,7 +96,7 @@ public class IngotType {
         IngotType type = new IngotType(stack);
         type.color = buf.readInt();
         int l = buf.readInt();
-        type.sprite = buf.readStringFromBuffer(l);
+        type.spriteName = buf.readStringFromBuffer(l);
 
         return type;
     }
@@ -104,32 +104,12 @@ public class IngotType {
         return color;
     }
 
-    public String getSprite() {
-        return sprite;
+    public TextureAtlasSprite getSprite() {
+        return spriteCache.get(getDummy());
     }
 
     public DummyStack getDummy() {
         return new DummyStack(stack);
     }
-    public static class DummyStack {
-        Item item;
-        int meta;
-        public DummyStack(ItemStack stack) {
-            this(stack.getItem(), stack.getMetadata());
-        }
-        public  DummyStack(Item item, int meta) {
-            this.item = item;
-            this.meta = meta;
-        }
-        @Override
-        public boolean equals(Object o) {
-            return ((DummyStack) o).item == this.item &&
-            ((DummyStack) o).meta == this.meta;
-        }
 
-        @Override
-        public int hashCode() {
-            return Item.getIdFromItem(item)*meta;
-        }
-    }
 }

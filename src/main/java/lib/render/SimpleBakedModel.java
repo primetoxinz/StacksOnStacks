@@ -23,7 +23,6 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
-import lib.utils.RenderUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,13 +54,6 @@ public class SimpleBakedModel implements IBakedModel {
     public void addModel(IBakedModel model) {
         for (int i = 0; i < 7; i++) {
             quads[i].addAll(model.getQuads(null, i == 6 ? null : EnumFacing.getFront(i), 0));
-        }
-    }
-
-    public void addModel(IBakedModel model, int tint) {
-        for (int i = 0; i < 7; i++) {
-            EnumFacing side = i == 6 ? null : EnumFacing.getFront(i);
-            RenderUtils.addRecoloredQuads(model.getQuads(null, side, 0), tint, quads[i], side);
         }
     }
 
