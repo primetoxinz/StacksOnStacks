@@ -1,7 +1,8 @@
 package com.primetoxinz.stacksonstacks.render;
 
 import com.primetoxinz.stacksonstacks.Config;
-import com.primetoxinz.stacksonstacks.logic.PartIngot;
+import com.primetoxinz.stacksonstacks.ingot.PartIngot;
+
 import lib.render.ModelFactory;
 import lib.render.SimpleBakedModel;
 import lib.utils.RenderUtils;

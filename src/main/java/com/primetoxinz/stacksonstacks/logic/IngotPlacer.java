@@ -28,6 +28,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.primetoxinz.stacksonstacks.ingot.DummyStack;
+import com.primetoxinz.stacksonstacks.ingot.IngotLocation;
+import com.primetoxinz.stacksonstacks.ingot.IngotType;
+import com.primetoxinz.stacksonstacks.ingot.PartIngot;
+
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.FAIL;
 import static net.minecraft.util.EnumActionResult.SUCCESS;
@@ -37,7 +42,7 @@ public class IngotPlacer {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     @SideOnly(Side.CLIENT)
-    public final void onDvrawBlockHighlight(DrawBlockHighlightEvent event) {
+    public final void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
         EntityPlayer player = event.getPlayer();
         if (canBeIngot(player.getHeldItemMainhand()) || canBeIngot(player.getHeldItemOffhand())) {
             RenderUtils.drawSelectionBox(player, event.getTarget(), 0, event.getPartialTicks());
@@ -49,37 +54,63 @@ public class IngotPlacer {
         onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
     }
 
-    private static double round(double num, double r) {
-        return ((int) (num * (int) (r))) / r;
-    }
-
-    private static double relativePos(double x) {
-        double pos = ((x > 0) ? Math.floor(x): Math.ceil(x));
-        return Math.abs(x - pos);
-    }
-
-    private static IngotLocation getPositionFromHit(Vec3d hit, EntityPlayer player) {
-        double x = relativePos(round(hit.xCoord, 2));
-        if ( hit.xCoord < 0) {
-            x=(x+.5)%1;
+    private static EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
+        if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
+            if (player.isSneaking()) {
+                placeAll(world, pos, side, stack, player);
+            } else {
+                place(world, pos, side, hit, stack, player);
+            }
+            return SUCCESS;
         }
-        double y = relativePos(round(hit.yCoord, 8));
-        double z = relativePos(round(hit.zCoord, 4));
-        if ( hit.zCoord < 0) {
-            z=Math.abs(.75-z);
-        }
-        IngotLocation loc = new IngotLocation(x, y, z, player.getHorizontalFacing().getAxis());
-        return loc;
+        return FAIL;
     }
-
+    
     public static boolean canBeIngot(ItemStack stack) {
-        if (stack == null)
-            return false;
-        DummyStack dummy = new DummyStack(stack);
-        if(ingotRegistry.contains(dummy)) {
-            return true;
-        } else {
-            return OreDictUtil.getOreDictionaryNameStartingWith(stack, "ingot") != null;
+        if (stack != null) {
+	        DummyStack dummy = new DummyStack(stack);
+	        if(ingotRegistry.contains(dummy)) {
+	            return true;
+	        } else {
+	        	String ingotName = OreDictUtil.getOreDictionaryNameStartingWith(stack, "ingot");
+	        	
+	        	if(ingotName != null) {
+	        		ingotRegistry.add(dummy);
+	        		return true;
+	        	}
+	        }
+        }
+        
+        return false;
+    }
+    
+    private static void placeAll(World world, BlockPos pos, EnumFacing side, ItemStack stack, EntityPlayer player) {
+        new Thread(() -> {
+            long startTime = System.currentTimeMillis();
+            Vec3d hit = new Vec3d(0, 0, 0);
+            while (stack.stackSize > 0 && (System.currentTimeMillis() - startTime) < 10000) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                place(world, pos, side, hit, stack, player);
+                hit = nextHit(hit);
+            }
+        }).start();
+    }
+
+    private static void place(World world, BlockPos pos, Vec3d hit, ItemStack stack, EntityPlayer player) {
+        IngotLocation location = IngotLocation.fromHit(hit, player.getHorizontalFacing().getAxis());
+        PartIngot part = new PartIngot(location, new IngotType(stack));
+        if (canAddPart(world, pos, part)) {
+            if (!world.isRemote) {
+                try {
+                    MultipartHelper.addPart(world, pos, part);
+                } catch (Throwable e) {
+                }
+            }
+            consumeItem(player, stack);
         }
     }
 
@@ -102,18 +133,6 @@ public class IngotPlacer {
         }
     }
 
-    private static EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
-        if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
-            if (player.isSneaking()) {
-                placeAll(world, pos, side, stack, player);
-            } else {
-                place(world, pos, side, hit, stack, player);
-            }
-            return SUCCESS;
-        }
-        return FAIL;
-    }
-
     private static Vec3d nextHit(Vec3d hit) {
         double x = hit.xCoord;
         double y = hit.yCoord;
@@ -131,35 +150,7 @@ public class IngotPlacer {
         return new Vec3d(x,y,z);
     }
 
-    public static void placeAll(World world, BlockPos pos, EnumFacing side, ItemStack stack, EntityPlayer player) {
-        new Thread(() -> {
-            long startTime = System.currentTimeMillis();
-            Vec3d h = new Vec3d(0, 0, 0);
-            while (stack.stackSize > 0 && (System.currentTimeMillis() - startTime) < 10000) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                place(world, pos, side, h, stack, player);
-                h = nextHit(h);
-            }
-        }).start();
-    }
 
-    public static void place(World world, BlockPos pos, Vec3d hit, ItemStack stack, EntityPlayer player) {
-        IngotLocation location = getPositionFromHit(hit, player);
-        PartIngot part = new PartIngot(location, new IngotType(stack));
-        if (canAddPart(world, pos, part)) {
-            if (!world.isRemote) {
-                try {
-                    MultipartHelper.addPart(world, pos, part);
-                } catch (Throwable e) {
-                }
-            }
-            consumeItem(player, stack);
-        }
-    }
 
     private static void place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
         //TODO REWRITE THIS SHIT
@@ -168,7 +159,7 @@ public class IngotPlacer {
             if (container == null) {
                 pos = pos.offset(side);
             } else {
-                IngotLocation location = getPositionFromHit(hit, player);
+                IngotLocation location = IngotLocation.fromHit(hit, player.getHorizontalFacing().getAxis());
                 if (location.getRelativeLocation().getY() == 0 || isContainerFull(container)) {
                     pos = pos.offset(side);
                 }
@@ -186,18 +177,21 @@ public class IngotPlacer {
     }
 
     public static boolean isContainerFull(IMultipartContainer container) {
-        if (container == null)
-            return false;
-        List<IMultipart> parts = container.getParts().stream().filter(part -> part instanceof PartIngot).collect(Collectors.toList());
-        if (parts.size() == 64)
-            return true;
+        if (container != null) {
+	        List<IMultipart> parts = container.getParts().stream().filter(part -> part instanceof PartIngot).collect(Collectors.toList());
+	        if (parts.size() == 64) {
+	            return true;
+	        }
+        }
+        
         return false;
     }
 
     private static void consumeItem(EntityPlayer player, ItemStack stack) {
         stack.stackSize--;
-        if (stack.stackSize <= 0 && player.getActiveHand() != null)
+        if (stack.stackSize <= 0 && player.getActiveHand() != null) {
             player.setHeldItem(player.getActiveHand(), null);
+        }
     }
 
 
