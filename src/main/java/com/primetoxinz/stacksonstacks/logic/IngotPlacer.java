@@ -1,5 +1,9 @@
 package com.primetoxinz.stacksonstacks.logic;
 
+import com.primetoxinz.stacksonstacks.ingot.DummyStack;
+import com.primetoxinz.stacksonstacks.ingot.IngotLocation;
+import com.primetoxinz.stacksonstacks.ingot.IngotType;
+import com.primetoxinz.stacksonstacks.ingot.PartIngot;
 import lib.utils.RenderUtils;
 import mcmultipart.block.TileMultipartContainer;
 import mcmultipart.multipart.IMultipart;
@@ -28,11 +32,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.primetoxinz.stacksonstacks.ingot.DummyStack;
-import com.primetoxinz.stacksonstacks.ingot.IngotLocation;
-import com.primetoxinz.stacksonstacks.ingot.IngotType;
-import com.primetoxinz.stacksonstacks.ingot.PartIngot;
-
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.FAIL;
 import static net.minecraft.util.EnumActionResult.SUCCESS;
@@ -56,11 +55,7 @@ public class IngotPlacer {
 
     private static EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
         if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
-            if (player.isSneaking()) {
-                placeAll(world, pos, side, stack, player);
-            } else {
-                place(world, pos, side, hit, stack, player);
-            }
+            place(world, pos, side, hit, stack, player);
             return SUCCESS;
         }
         return FAIL;
@@ -82,36 +77,6 @@ public class IngotPlacer {
         }
         
         return false;
-    }
-    
-    private static void placeAll(World world, BlockPos pos, EnumFacing side, ItemStack stack, EntityPlayer player) {
-        new Thread(() -> {
-            long startTime = System.currentTimeMillis();
-            Vec3d hit = new Vec3d(0, 0, 0);
-            while (stack.stackSize > 0 && (System.currentTimeMillis() - startTime) < 10000) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                place(world, pos, side, hit, stack, player);
-                hit = nextHit(hit);
-            }
-        }).start();
-    }
-
-    private static void place(World world, BlockPos pos, Vec3d hit, ItemStack stack, EntityPlayer player) {
-        IngotLocation location = IngotLocation.fromHit(hit, player.getHorizontalFacing().getAxis());
-        PartIngot part = new PartIngot(location, new IngotType(stack));
-        if (canAddPart(world, pos, part)) {
-            if (!world.isRemote) {
-                try {
-                    MultipartHelper.addPart(world, pos, part);
-                } catch (Throwable e) {
-                }
-            }
-            consumeItem(player, stack);
-        }
     }
 
     private static boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
@@ -153,26 +118,55 @@ public class IngotPlacer {
 
 
     private static void place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
-        //TODO REWRITE THIS SHIT
-        if (side == EnumFacing.UP) {
-            IMultipartContainer container = MultipartHelper.getPartContainer(world, pos);
-            if (container == null) {
-                pos = pos.offset(side);
-            } else {
-                IngotLocation location = IngotLocation.fromHit(hit, player.getHorizontalFacing().getAxis());
-                if (location.getRelativeLocation().getY() == 0 || isContainerFull(container)) {
-                    pos = pos.offset(side);
+        IMultipartContainer container = MultipartHelper.getPartContainer(world, pos);
+        BlockPos place = pos;
+        boolean full = isContainerFull(container);
+        if (container != null) {
+
+            if(full) {
+                place=pos.up();
+                IMultipartContainer next = MultipartHelper.getPartContainer(world, place);
+                if(next != null) {
+                    place(world,place,side,hit,stack,player);
                 }
             }
-            place(world, pos, hit, stack, player);
         } else {
-            if (player.isSneaking() && side.getAxis().isHorizontal()) {
-//                if (IngotPlacer.isContainerFull(MultipartHelper.getPartContainer(world, pos))) {
-//                    IngotPlacer.placeAll(player.getEntityWorld(), pos, UP, stack, player);
-//                } else {
-//                    IngotPlacer.placeAll(player.getEntityWorld(), pos.down(), UP, stack, player);
-//                }
+            place=pos.offset(side);
+        }
+        if (player.isSneaking()) {
+            placeAll(world, place, stack, player);
+        } else if(!full){
+            place(world, place, hit, stack, player);
+        }
+    }
+
+    private static void placeAll(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
+        new Thread(() -> {
+            long startTime = System.currentTimeMillis();
+            Vec3d hit = new Vec3d(0, 0, 0);
+            while (stack.stackSize > 0 && (System.currentTimeMillis() - startTime) < 2000) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                place(world, pos, hit, stack, player);
+                hit = nextHit(hit);
             }
+        }).start();
+    }
+
+    private static void place(World world, BlockPos pos, Vec3d hit, ItemStack stack, EntityPlayer player) {
+        IngotLocation location = IngotLocation.fromHit(hit, player.getHorizontalFacing().getAxis());
+        PartIngot part = new PartIngot(location, new IngotType(stack));
+        if (canAddPart(world, pos, part)) {
+            if (!world.isRemote) {
+                try {
+                    MultipartHelper.addPart(world, pos, part);
+                } catch (Throwable e) {
+                }
+            }
+            consumeItem(player, stack);
         }
     }
 
@@ -188,7 +182,8 @@ public class IngotPlacer {
     }
 
     private static void consumeItem(EntityPlayer player, ItemStack stack) {
-        stack.stackSize--;
+        if (!player.isCreative())
+            stack.stackSize--;
         if (stack.stackSize <= 0 && player.getActiveHand() != null) {
             player.setHeldItem(player.getActiveHand(), null);
         }
