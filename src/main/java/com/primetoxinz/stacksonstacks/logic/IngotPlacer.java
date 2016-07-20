@@ -1,5 +1,9 @@
 package com.primetoxinz.stacksonstacks.logic;
 
+import com.primetoxinz.stacksonstacks.SoS;
+import com.primetoxinz.stacksonstacks.capability.IIngotCount;
+import com.primetoxinz.stacksonstacks.capability.IngotCapabilities;
+import com.primetoxinz.stacksonstacks.capability.IngotCountProvider;
 import com.primetoxinz.stacksonstacks.ingot.DummyStack;
 import com.primetoxinz.stacksonstacks.ingot.IngotLocation;
 import com.primetoxinz.stacksonstacks.ingot.IngotType;
@@ -15,11 +19,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -30,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static mcmultipart.multipart.MultipartHelper.getPartContainer;
 import static net.minecraft.util.EnumActionResult.FAIL;
@@ -53,6 +58,16 @@ public class IngotPlacer {
         onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void attachCapability(AttachCapabilitiesEvent.TileEntity e) {
+        if (e.getTileEntity() instanceof TileMultipartContainer) {
+            TileMultipartContainer container = (TileMultipartContainer) e.getTileEntity();
+            if (!container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
+                System.out.println("doesn't have,adding");
+                e.addCapability(new ResourceLocation(SoS.MODID, "ingot_capability"), new IngotCountProvider());
+            }
+        }
+    }
     private static EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
         if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
             place(world, pos, side, hit, stack, player);
@@ -120,7 +135,7 @@ public class IngotPlacer {
     private static void place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
         IMultipartContainer container = MultipartHelper.getPartContainer(world, pos);
         BlockPos place = pos;
-        boolean full = isContainerFull(container);
+        boolean full = isContainerFull((TileMultipartContainer) container);
         if (container != null) {
 
             if(full) {
@@ -170,14 +185,12 @@ public class IngotPlacer {
         }
     }
 
-    public static boolean isContainerFull(IMultipartContainer container) {
-        if (container != null) {
-	        List<IMultipart> parts = container.getParts().stream().filter(part -> part instanceof PartIngot).collect(Collectors.toList());
-	        if (parts.size() == 64) {
-	            return true;
-	        }
+    public static boolean isContainerFull(TileMultipartContainer container) {
+        if (container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
+            IIngotCount cap = container.getCapability(IngotCapabilities.CAPABILITY_INGOT, null);
+            System.out.println(cap.isFull());
+            return cap.isFull();
         }
-        
         return false;
     }
 

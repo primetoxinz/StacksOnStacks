@@ -1,9 +1,12 @@
 package com.primetoxinz.stacksonstacks.ingot;
 
 import com.primetoxinz.stacksonstacks.SoS;
+import com.primetoxinz.stacksonstacks.capability.IIngotCount;
+import com.primetoxinz.stacksonstacks.capability.IngotCapabilities;
 import lib.render.IRenderComparable;
 import lib.utils.GenericExtendedProperty;
 import mcmultipart.MCMultiPartMod;
+import mcmultipart.block.TileMultipartContainer;
 import mcmultipart.multipart.*;
 import mcmultipart.raytrace.PartMOP;
 import net.minecraft.block.Block;
@@ -18,6 +21,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -53,6 +57,30 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     public PartIngot(IngotLocation location, IngotType type) {
         this.location = location;
         this.type = type;
+    }
+
+    @Override
+    public void onAdded() {
+        TileEntity tile = getWorld().getTileEntity(getPos());
+        if(tile instanceof TileMultipartContainer) {
+            TileMultipartContainer container = (TileMultipartContainer) tile;
+            if(container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
+                IIngotCount cap = container.getCapability(IngotCapabilities.CAPABILITY_INGOT,null);
+                cap.addIngot();
+            }
+        }
+    }
+
+    @Override
+    public void onRemoved() {
+        TileEntity tile = getWorld().getTileEntity(getPos());
+        if(tile instanceof TileMultipartContainer) {
+            TileMultipartContainer container = (TileMultipartContainer) tile;
+            if(container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
+                IIngotCount cap = container.getCapability(IngotCapabilities.CAPABILITY_INGOT,null);
+                cap.removeIngot();
+            }
+        }
     }
 
     @Override

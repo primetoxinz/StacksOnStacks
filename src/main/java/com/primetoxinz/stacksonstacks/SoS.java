@@ -1,10 +1,13 @@
 package com.primetoxinz.stacksonstacks;
 
+import com.primetoxinz.stacksonstacks.capability.IIngotCount;
+import com.primetoxinz.stacksonstacks.capability.IngotCapabilities;
+import com.primetoxinz.stacksonstacks.capability.IngotCount;
 import com.primetoxinz.stacksonstacks.ingot.PartIngot;
 import com.primetoxinz.stacksonstacks.logic.IngotPlacer;
-
 import mcmultipart.multipart.MultipartRegistry;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -25,6 +28,7 @@ public class SoS {
     public static Config config;
     @Mod.EventHandler
     public void pre(FMLPreInitializationEvent e) {
+        CapabilityManager.INSTANCE.register(IIngotCount.class, new IngotCapabilities.CapabilityIngotCount(), IngotCount.class);
         config = new Config(e.getSuggestedConfigurationFile());
         config.pre();
         MinecraftForge.EVENT_BUS.register(new IngotPlacer());
