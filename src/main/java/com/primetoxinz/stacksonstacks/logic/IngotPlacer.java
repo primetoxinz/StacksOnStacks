@@ -186,7 +186,8 @@ public class IngotPlacer {
     }
 
     public static boolean isContainerFull(TileMultipartContainer container) {
-        if (container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
+
+        if (container != null && container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
             IIngotCount cap = container.getCapability(IngotCapabilities.CAPABILITY_INGOT, null);
             System.out.println(cap.isFull());
             return cap.isFull();

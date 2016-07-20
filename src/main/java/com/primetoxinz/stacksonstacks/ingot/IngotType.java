@@ -68,23 +68,21 @@ public class IngotType {
         if(stack != null)
             stack.writeToNBT(tag);
         tag.setInteger("color",color);
-        if(spriteName != null)
-        tag.setString("sprite",spriteName);
+
         return tag;
     }
     public static IngotType readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
         IngotType type = new IngotType(stack);
         type.color = tag.getInteger("color");
-        type.spriteName = tag.getString("sprite");
+
         return type;
     }
 
     public void writeUpdatePacket(PacketBuffer buf) {
         buf.writeItemStackToBuffer(stack);
         buf.writeInt(color);
-        buf.writeInt(spriteName.length());
-        buf.writeString(spriteName);
+
     }
 
     public static IngotType readUpdatePacket(PacketBuffer buf) {
@@ -96,8 +94,6 @@ public class IngotType {
         }
         IngotType type = new IngotType(stack);
         type.color = buf.readInt();
-        int l = buf.readInt();
-        type.spriteName = buf.readStringFromBuffer(l);
 
         return type;
     }

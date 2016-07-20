@@ -9,7 +9,6 @@ import mcmultipart.MCMultiPartMod;
 import mcmultipart.block.TileMultipartContainer;
 import mcmultipart.multipart.*;
 import mcmultipart.raytrace.PartMOP;
-import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -17,7 +16,6 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
@@ -179,15 +177,6 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         }
     }
 
-    @Override
-    public void onNeighborBlockChange(Block block) {
-        try {
-            if (getWorld().getBlockState(getPos().down()) == Blocks.AIR.getDefaultState()) {
-                dropAll(MultipartHelper.getPartContainer(getWorld(), getPos()));
-            }
-        } catch (NullPointerException e) {
-        }
-    }
 
     public void dropAll(IMultipartContainer container) {
         notifyBlockUpdate();
