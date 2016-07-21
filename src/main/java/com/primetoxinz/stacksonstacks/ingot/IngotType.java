@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.HashMap;
 public class IngotType {
     public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();
     public static HashMap<DummyStack,TextureAtlasSprite> spriteCache = new HashMap<>();
+
     public ItemStack stack;
     public int color;
 
@@ -24,17 +27,30 @@ public class IngotType {
             stack = stack.copy();
             stack.stackSize=1;
         }
-
         this.stack = stack;
+
+//        if(stack != null) {
+//            findColor();
+//            if(Config.useIngotBlockTexture)
+//                findTexture();
+//            else
+//                spriteName = RenderIngot.DEFAULT_TEXTURE.toString();
+//        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void initRender() {
         if(stack != null) {
             findColor();
             if(Config.useIngotBlockTexture)
                 findTexture();
-            else
+            else {
                 spriteName = RenderIngot.DEFAULT_TEXTURE.toString();
+
+            }
         }
     }
-
+    @SideOnly(Side.CLIENT)
     public void findColor() {
         DummyStack dummy = getDummy();
         if (colorCache.containsKey(dummy)) {
@@ -44,7 +60,7 @@ public class IngotType {
             colorCache.put(dummy, color);
         }
     }
-
+    @SideOnly(Side.CLIENT)
     public void findTexture() {
 
         DummyStack dummy = getDummy();
@@ -75,7 +91,6 @@ public class IngotType {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
         IngotType type = new IngotType(stack);
         type.color = tag.getInteger("color");
-
         return type;
     }
 
@@ -97,6 +112,7 @@ public class IngotType {
 
         return type;
     }
+
     public int getColor() {
         return color;
     }
@@ -108,5 +124,10 @@ public class IngotType {
     public DummyStack getDummy() {
         return new DummyStack(stack);
     }
+
+    public ItemStack getStack() {
+        return stack;
+    }
+
 
 }

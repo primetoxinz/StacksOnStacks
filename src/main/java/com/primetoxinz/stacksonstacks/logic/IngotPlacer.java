@@ -63,7 +63,6 @@ public class IngotPlacer {
         if (e.getTileEntity() instanceof TileMultipartContainer) {
             TileMultipartContainer container = (TileMultipartContainer) e.getTileEntity();
             if (!container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
-                System.out.println("doesn't have,adding");
                 e.addCapability(new ResourceLocation(SoS.MODID, "ingot_capability"), new IngotCountProvider());
             }
         }
@@ -160,11 +159,6 @@ public class IngotPlacer {
             long startTime = System.currentTimeMillis();
             Vec3d hit = new Vec3d(0, 0, 0);
             while (stack.stackSize > 0 && (System.currentTimeMillis() - startTime) < 2000) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 place(world, pos, hit, stack, player);
                 hit = nextHit(hit);
             }

@@ -2,7 +2,6 @@ package com.primetoxinz.stacksonstacks.render;
 
 import com.primetoxinz.stacksonstacks.Config;
 import com.primetoxinz.stacksonstacks.ingot.PartIngot;
-
 import lib.render.ModelFactory;
 import lib.render.SimpleBakedModel;
 import lib.utils.RenderUtils;
@@ -102,6 +101,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
     @Override
     public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
+        ingot.type.initRender();
         TextureAtlasSprite tex = ingot.type.getSprite();
         sprite = tex != null ? tex:RenderUtils.textureGetter.apply(DEFAULT_TEXTURE);
         Vector3f loc = ingot.location.getRelativeLocation();

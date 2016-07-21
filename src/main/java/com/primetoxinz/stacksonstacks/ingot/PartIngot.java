@@ -215,7 +215,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     @Override
     public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
-        System.out.println(this.getPos());
+        System.out.println(this.getLocation().getRelativeLocation());
 
         return true;
     }
@@ -230,4 +230,8 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         return 0;
     }
 
+
+    public ItemStack getStack() {
+        return type.getStack();
+    }
 }

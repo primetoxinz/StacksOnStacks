@@ -34,6 +34,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public final class RenderUtils {
 
@@ -84,7 +86,7 @@ public final class RenderUtils {
 
         return (avgColor[0] | (avgColor[1] << 8) | (avgColor[2] << 16)) | 0xFF000000;
     }
-
+    @SideOnly(Side.CLIENT)
 	public static TextureAtlasSprite getSprite(ItemStack stack) {
 		if (renderItem == null) {
 			renderItem = Minecraft.getMinecraft().getRenderItem();
