@@ -136,7 +136,6 @@ public class IngotPlacer {
         BlockPos place = pos;
         boolean full = isContainerFull((TileMultipartContainer) container);
         if (container != null) {
-
             if(full) {
                 place=pos.up();
                 IMultipartContainer next = MultipartHelper.getPartContainer(world, place);
@@ -145,6 +144,8 @@ public class IngotPlacer {
                 }
             }
         } else {
+            if(world.getTileEntity(pos) != null)
+                return;
             place=pos.offset(side);
         }
         if (player.isSneaking()) {
