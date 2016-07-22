@@ -184,7 +184,6 @@ public class IngotPlacer {
 
         if (container != null && container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
             IIngotCount cap = container.getCapability(IngotCapabilities.CAPABILITY_INGOT, null);
-            System.out.println(cap.isFull());
             return cap.isFull();
         }
         return false;

@@ -1,13 +1,10 @@
 package com.primetoxinz.stacksonstacks.ingot;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
-
-import org.lwjgl.util.vector.Vector3f;
 
 public class IngotLocation {
     protected float x, y, z;
@@ -56,8 +53,8 @@ public class IngotLocation {
         return new IngotLocation(x,y,z,EnumFacing.Axis.values()[axis]);
     }
 
-    public Vector3f getRelativeLocation() {
-        return (Vector3f) new Vector3f(x,y,z);
+    public Vec3d getRelativeLocation() {
+        return new Vec3d(x,y,z);
     }
 
     public boolean equals(IngotLocation loc) {

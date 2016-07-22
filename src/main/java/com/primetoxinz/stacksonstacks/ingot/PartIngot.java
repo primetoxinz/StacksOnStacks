@@ -20,15 +20,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,7 +136,6 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         if(type != null)
             type.writeToNBT(tag);
         else {
-            System.out.println("REMOVING NULL THING");
             getPartContainer(getWorld(), getPos()).removePart(this);
         }
         return tag;
@@ -209,15 +207,8 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
         return location;
     }
 
-    public Vector3f getRelativeLocation() {
+    public Vec3d getRelativeLocation() {
         return location.getRelativeLocation();
-    }
-
-    @Override
-    public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
-        System.out.println(this.getLocation().getRelativeLocation());
-
-        return true;
     }
 
     @Override

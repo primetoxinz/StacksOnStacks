@@ -28,14 +28,6 @@ public class IngotType {
             stack.stackSize=1;
         }
         this.stack = stack;
-
-//        if(stack != null) {
-//            findColor();
-//            if(Config.useIngotBlockTexture)
-//                findTexture();
-//            else
-//                spriteName = RenderIngot.DEFAULT_TEXTURE.toString();
-//        }
     }
 
     @SideOnly(Side.CLIENT)

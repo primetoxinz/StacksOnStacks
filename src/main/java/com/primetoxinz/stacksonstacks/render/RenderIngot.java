@@ -14,7 +14,6 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.awt.*;
 
@@ -81,7 +80,7 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         return builder.build();
     }
 
-    public SimpleBakedModel createRectPrism(float x, float y, float z, float w, float h, float l, int color) {
+    public SimpleBakedModel createRectPrism(double x, double y, double z, float w, float h, float l, int color) {
         SimpleBakedModel model = new SimpleBakedModel(this);
         Vec3d vec = new Vec3d(x, y, z);
         float o = 0.4f/16;
@@ -104,9 +103,9 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         ingot.type.initRender();
         TextureAtlasSprite tex = ingot.type.getSprite();
         sprite = tex != null ? tex:RenderUtils.textureGetter.apply(DEFAULT_TEXTURE);
-        Vector3f loc = ingot.location.getRelativeLocation();
+        Vec3d loc = ingot.location.getRelativeLocation();
         float o = 0.1f/16;
-        return createRectPrism(loc.x+o, loc.y, loc.z+o, .5f-2*o, 0.125f, .25f-2*o, ingot.type.getColor());
+        return createRectPrism(loc.xCoord+o, loc.yCoord, loc.zCoord+o, .5f-2*o, 0.125f, .25f-2*o, ingot.type.getColor());
     }
 
     @Override
