@@ -169,33 +169,49 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     @Override
     public void harvest(EntityPlayer player, PartMOP hit) {
         if( player != null && player.isSneaking()) {
-            dropAll(MultipartHelper.getPartContainer(player.worldObj,hit.getBlockPos()));
+            dropAll(player,MultipartHelper.getPartContainer(player.worldObj,hit.getBlockPos()));
         } else {
-            super.harvest(player,hit);
+            World world = getWorld();
+            BlockPos pos = getPos();
+            double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
+
+            if ((player == null || !player.capabilities.isCreativeMode) && !world.isRemote && world.getGameRules().getBoolean("doTileDrops")
+                    && !world.restoringBlockSnapshots) {
+                for (ItemStack stack : getDrops()) {
+                    if(player == null || !player.inventory.addItemStackToInventory(stack)) {
+                        EntityItem item = new EntityItem(world, x, y, z,stack);
+                        item.setDefaultPickupDelay();
+                        world.spawnEntityInWorld(item);
+                    }
+                }
+            }
+            getContainer().removePart(this);
         }
     }
 
 
-    public void dropAll(IMultipartContainer container) {
+    public void dropAll(EntityPlayer player, IMultipartContainer container) {
         notifyBlockUpdate();
            Iterator<IMultipart> iter = (Iterator<IMultipart>) container.getParts().iterator();
            while (iter.hasNext()) {
                 IMultipart part = iter.next();
                 if (part instanceof PartIngot)
-                     ((PartIngot) part).drop();
+                     ((PartIngot) part).drop(player);
            }
     }
 
-    public void drop() {
+    public void drop(EntityPlayer player) {
         World world = getWorld();
         BlockPos pos = getPos();
         if(world == null || pos == null)
             return;
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
         if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops") && !world.restoringBlockSnapshots) {
-            EntityItem item = new EntityItem(world, x, y, z, getDrops().get(0));
+            if(player == null || !player.inventory.addItemStackToInventory(getDrops().get(0))) {
+                EntityItem item = new EntityItem(world, x, y, z, getDrops().get(0));
                 item.setDefaultPickupDelay();
                 world.spawnEntityInWorld(item);
+            }
         }
         if (getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())
                 getContainer().removePart(this);
