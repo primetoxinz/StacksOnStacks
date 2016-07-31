@@ -96,6 +96,8 @@ public class IngotPlacer {
     private static boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
         IMultipartContainer container = getPartContainer(world, pos);
         if (container == null) {
+            if(!world.getBlockState(pos).getMaterial().isReplaceable())
+                return false;
             List<AxisAlignedBB> list = new ArrayList<AxisAlignedBB>();
             for (AxisAlignedBB bb : list)
                 if (!world.checkNoEntityCollision(bb.offset(pos.getX(), pos.getY(), pos.getZ()))) return false;
