@@ -65,7 +65,7 @@ public final class RenderUtils {
 		int pixelCount = 0;
 		int[] data = sprite.getFrameTextureData(0)[0];
 		int[] avgColor = new int[3];
-        int k = 3;
+        int k = 6;
         pixelCount = (sprite.getIconHeight()) * (sprite.getIconWidth());
 
         for (int j = k; j < sprite.getIconHeight()-k; j++) {

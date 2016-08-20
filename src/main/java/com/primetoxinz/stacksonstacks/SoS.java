@@ -34,5 +34,6 @@ public class SoS {
         MinecraftForge.EVENT_BUS.register(new IngotPlacer());
         MultipartRegistry.registerPart(PartIngot.class, "partIngot");
         proxy.pre(e);
+
     }
 }

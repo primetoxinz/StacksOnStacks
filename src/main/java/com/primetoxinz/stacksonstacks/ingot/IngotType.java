@@ -16,25 +16,26 @@ import java.util.HashMap;
 
 public class IngotType {
     public static HashMap<DummyStack, Integer> colorCache = new HashMap<>();
-    public static HashMap<DummyStack,TextureAtlasSprite> spriteCache = new HashMap<>();
+    public static HashMap<DummyStack, TextureAtlasSprite> spriteCache = new HashMap<>();
 
     public ItemStack stack;
     public int color;
 
     public String spriteName;
+
     public IngotType(ItemStack stack) {
-        if(stack != null) {
+        if (stack != null) {
             stack = stack.copy();
-            stack.stackSize=1;
+            stack.stackSize = 1;
         }
         this.stack = stack;
     }
 
     @SideOnly(Side.CLIENT)
     public void initRender() {
-        if(stack != null) {
+        if (stack != null) {
             findColor();
-            if(Config.useIngotBlockTexture)
+            if (Config.useIngotBlockTexture)
                 findTexture();
             else {
                 spriteName = RenderIngot.DEFAULT_TEXTURE.toString();
@@ -42,6 +43,7 @@ public class IngotType {
             }
         }
     }
+
     @SideOnly(Side.CLIENT)
     public void findColor() {
         DummyStack dummy = getDummy();
@@ -52,33 +54,35 @@ public class IngotType {
             colorCache.put(dummy, color);
         }
     }
+
     @SideOnly(Side.CLIENT)
     public void findTexture() {
 
         DummyStack dummy = getDummy();
-        if(spriteCache.containsKey(dummy)) {
+        if (spriteCache.containsKey(dummy)) {
             spriteName = spriteCache.get(dummy).getIconName();
         } else {
             ItemStack compress = OreDictUtil.getCompressIngotBlock(stack);
             TextureAtlasSprite sprite;
-            if(compress != null) {
+            if (compress != null) {
                 sprite = RenderUtils.getSprite(compress);
-                colorCache.put(dummy,0);
+                colorCache.put(dummy, 0);
             } else {
                 sprite = RenderUtils.textureGetter.apply(RenderIngot.DEFAULT_TEXTURE);
             }
-            spriteCache.put(dummy,sprite);
+            spriteCache.put(dummy, sprite);
             spriteName = sprite.getIconName();
         }
     }
 
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        if(stack != null)
+        if (stack != null)
             stack.writeToNBT(tag);
-        tag.setInteger("color",color);
+        tag.setInteger("color", color);
 
         return tag;
     }
+
     public static IngotType readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
         IngotType type = new IngotType(stack);
@@ -106,7 +110,7 @@ public class IngotType {
     }
 
     public int getColor() {
-        return color;
+        return color == 0 ? -1 : color;
     }
 
     public TextureAtlasSprite getSprite() {

@@ -41,8 +41,8 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    deobfCompile "mezz.jei:jei_1.10.2:3.7.6.231"
-    deobfCompile "MCMultiPart:MCMultiPart-experimental:1.2.0_74:universal"
+    deobfCompile "mezz.jei:jei_1.10.2:+"
+    deobfCompile "MCMultiPart:MCMultiPart-experimental:1.3.0_+:universal"
 }
 
 processResources

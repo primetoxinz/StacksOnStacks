@@ -7,6 +7,7 @@ import lib.render.IRenderComparable;
 import lib.utils.GenericExtendedProperty;
 import mcmultipart.MCMultiPartMod;
 import mcmultipart.block.TileMultipartContainer;
+import mcmultipart.client.multipart.IMultipartColor;
 import mcmultipart.multipart.*;
 import mcmultipart.raytrace.PartMOP;
 import net.minecraft.block.properties.IProperty;
@@ -40,7 +41,7 @@ import static mcmultipart.multipart.MultipartHelper.getPartContainer;
  * Created by tyler on 5/28/16.
  */
 
-public class PartIngot extends Multipart implements IRenderComparable<PartIngot>, INormallyOccludingPart {
+public class PartIngot extends Multipart implements IRenderComparable<PartIngot>, INormallyOccludingPart,IMultipartColor {
 
     public static final GenericExtendedProperty<PartIngot> PROPERTY = new GenericExtendedProperty<PartIngot>("part",PartIngot.class);
 
@@ -240,5 +241,11 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
 
     public ItemStack getStack() {
         return type.getStack();
+    }
+
+
+    @Override
+    public int colorMultiplier(IBlockState state, int tintIndex) {
+        return tintIndex;
     }
 }

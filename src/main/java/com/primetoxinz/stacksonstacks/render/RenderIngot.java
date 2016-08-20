@@ -14,8 +14,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-
-import java.awt.*;
+import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 
 import static net.minecraft.util.EnumFacing.*;
 
@@ -29,19 +28,14 @@ public class RenderIngot extends ModelFactory<PartIngot> {
         this.format = format;
     }
 
-    private void putVertex(CustomQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
-
-        Color c = new Color(builder.getTint());
+    private void putVertex(UnpackedBakedQuad.Builder builder, Vec3d normal, double x, double y, double z, float u, float v) {
         for (int e = 0; e < format.getElementCount(); e++) {
             switch (format.getElement(e).getUsage()) {
                 case POSITION:
                     builder.put(e, (float) x, (float) y, (float) z, 1.0f);
                     break;
                 case COLOR:
-                    if (builder.getTint() == 0)
-                        builder.put(e, 1, 1, 1, 1.0f);
-                    else
-                        builder.put(e, c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
+                    builder.put(e, 1.0f, 1.0f, 1.0f, 1.0f);
                     break;
                 case UV:
                     if (format.getElement(e).getIndex() == 0) {
@@ -62,10 +56,10 @@ public class RenderIngot extends ModelFactory<PartIngot> {
 
     private BakedQuad createQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4,EnumFacing side,int color) {
         Vec3d normal = new Vec3d(0,0,1);
-        CustomQuad.Builder builder = new CustomQuad.Builder(format);
+        UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(format);
         builder.setTexture(sprite);
-        builder.setQuadTint(color);
         builder.setApplyDiffuseLighting(false);
+        builder.setQuadTint(color);
         if(side == WEST || side == NORTH || side == UP) {
             putVertex(builder, normal, v1.xCoord, v1.yCoord, v1.zCoord, 0, 0);
             putVertex(builder, normal, v2.xCoord, v2.yCoord, v2.zCoord, 0, 16);
@@ -115,6 +109,4 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     public TextureAtlasSprite getParticleTexture() {
         return sprite;
     }
-
-
 }

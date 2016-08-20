@@ -82,14 +82,12 @@ public class IngotPlacer {
 	            return true;
 	        } else {
 	        	String ingotName = OreDictUtil.getOreDictionaryNameStartingWith(stack, "ingot");
-	        	
 	        	if(ingotName != null) {
 	        		ingotRegistry.add(dummy);
 	        		return true;
 	        	}
 	        }
         }
-        
         return false;
     }
 
