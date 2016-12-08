@@ -2,7 +2,9 @@ package com.primetoxinz.stacksonstacks.render;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
-import com.primetoxinz.stacksonstacks.SoS;
+import com.primetoxinz.stacksonstacks.StacksOnStacks;
+import com.primetoxinz.stacksonstacks.lib.LibResources;
+
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -22,12 +24,11 @@ import java.util.Collections;
  * Created by tyler on 7/14/16.
  */
 public class ModelLoader implements ICustomModelLoader {
-    public static final ResourceLocation LOCATION =new ModelResourceLocation(SoS.MODID+":partIngot", "multipart") ;
     private static final Model MODEL = new Model();
 
     @Override
     public boolean accepts(ResourceLocation modelLocation) {
-        return modelLocation.equals(LOCATION);
+        return modelLocation.equals(LibResources.MODEL_LOCATION);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class ModelLoader implements ICustomModelLoader {
 
         @Override
         public Collection<ResourceLocation> getTextures() {
-            return ImmutableSet.of(RenderIngot.DEFAULT_TEXTURE);
+            return ImmutableSet.of(LibResources.DEFAULT_SPRITE);
         }
 
         @Override

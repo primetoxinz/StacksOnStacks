@@ -1,7 +1,18 @@
 package com.primetoxinz.stacksonstacks.render;
 
-import com.primetoxinz.stacksonstacks.Config;
-import com.primetoxinz.stacksonstacks.ingot.PartIngot;
+import static net.minecraft.util.EnumFacing.DOWN;
+import static net.minecraft.util.EnumFacing.EAST;
+import static net.minecraft.util.EnumFacing.NORTH;
+import static net.minecraft.util.EnumFacing.SOUTH;
+import static net.minecraft.util.EnumFacing.UP;
+import static net.minecraft.util.EnumFacing.WEST;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.input.Mouse;
+
+import com.primetoxinz.stacksonstacks.ingot.MultiPartIngot;
+import com.primetoxinz.stacksonstacks.ingot.RegisteredIngot;
+
 import lib.render.ModelFactory;
 import lib.render.SimpleBakedModel;
 import lib.utils.RenderUtils;
@@ -16,15 +27,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 
-import static net.minecraft.util.EnumFacing.*;
+public class RenderIngot extends ModelFactory<MultiPartIngot> {
+	public static ResourceLocation defaultSpriteResourceLocation = new ResourceLocation("stackonstacks", "blocks/default_ingot");
 
-public class RenderIngot extends ModelFactory<PartIngot> {
-    public static ResourceLocation DEFAULT_TEXTURE = new ResourceLocation("stacksonstacks", "blocks/ingot" + Config.textureVersion);
     private TextureAtlasSprite sprite;
     private VertexFormat format;
 
     public RenderIngot(VertexFormat format) {
-        super(PartIngot.PROPERTY);
+        super(MultiPartIngot.PROPERTY);
         this.format = format;
     }
 
@@ -93,17 +103,18 @@ public class RenderIngot extends ModelFactory<PartIngot> {
     }
 
     @Override
-    public IBakedModel bake(PartIngot ingot, boolean isItem, BlockRenderLayer layer) {
-        ingot.type.initRender();
-        TextureAtlasSprite tex = ingot.type.getSprite();
-        sprite = tex != null ? tex:RenderUtils.textureGetter.apply(DEFAULT_TEXTURE);
-        Vec3d loc = ingot.location.getRelativeLocation();
-        float o = 0.1f/16;
-        return createRectPrism(loc.xCoord+o, loc.yCoord, loc.zCoord+o, .5f-2*o, 0.125f, .25f-2*o, ingot.type.getColor());
+    public IBakedModel bake(MultiPartIngot multipartIngot, boolean isItem, BlockRenderLayer layer) {
+    	RegisteredIngot ingot = multipartIngot.getRegisteredIngot();
+    	Pair<Integer, ResourceLocation> renderInfo = ingot.getRenderInfo();
+    	sprite = RenderUtils.textureGetter.apply(renderInfo.getRight());
+    	
+        Vec3d loc = multipartIngot.getLocation().getRelativeLocation();
+        float offset = 0.1f/16;
+        return createRectPrism(loc.xCoord + offset, loc.yCoord, loc.zCoord + offset, .5f-2 * offset, 0.125f, .25f-2 * offset, renderInfo.getLeft());
     }
 
     @Override
-    public PartIngot fromItemStack(ItemStack stack) {  return null; }
+    public MultiPartIngot fromItemStack(ItemStack stack) {  return null; }
 
     @Override
     public TextureAtlasSprite getParticleTexture() {

@@ -1,4 +1,4 @@
-package com.primetoxinz.stacksonstacks.proxy;
+package com.primetoxinz.stacksonstacks.core;
 
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;

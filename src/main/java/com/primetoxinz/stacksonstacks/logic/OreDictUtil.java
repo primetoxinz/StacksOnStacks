@@ -19,6 +19,7 @@ public class OreDictUtil {
             names[i] = OreDictionary.getOreName(ids[i]);
         return names;
     }
+    
     public static String getOreDictionaryNameStartingWith(ItemStack stack, String start) {
         String value = null;
         if(stack != null) {
@@ -36,10 +37,11 @@ public class OreDictUtil {
 
         return value;
     }
-    public static ItemStack getCompressIngotBlock(ItemStack stack) {
-        String ingot = getOreDictionaryNameStartingWith(stack, "ingot");
-        if(ingot != null) {
-            List<ItemStack> blocks = OreDictionary.getOres(ingot.replace("ingot","block"));
+    
+    public static ItemStack getIngotBlock(ItemStack stack) {
+        String ingotName = getOreDictionaryNameStartingWith(stack, "ingot");
+        if(ingotName != null) {
+            List<ItemStack> blocks = OreDictionary.getOres(ingotName.replace("ingot", "block"));
             if(blocks != null && !blocks.isEmpty())
                 return blocks.get(0);
         }

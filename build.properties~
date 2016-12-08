@@ -1,7 +1,7 @@
 org.gradle.jvmargs=-Xmx4096m
 group=com.primetoxinz.stacksonstacks
 mod_name=StacksOnStacks2
-forge_version=12.18.3.2185
+forge_version=12.18.1.2185
 mc_version_suffix=1.10.0
 mc_mappings=snapshot_20160518
 mc_version=1.10.2

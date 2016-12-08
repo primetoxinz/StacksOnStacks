@@ -1,159 +1,122 @@
 package com.primetoxinz.stacksonstacks.logic;
 
-import com.primetoxinz.stacksonstacks.SoS;
+import static net.minecraft.util.EnumActionResult.FAIL;
+import static net.minecraft.util.EnumActionResult.SUCCESS;
+
+import javax.annotation.Nonnull;
+
 import com.primetoxinz.stacksonstacks.capability.IIngotCount;
-import com.primetoxinz.stacksonstacks.capability.IngotCapabilities;
 import com.primetoxinz.stacksonstacks.capability.IngotCountProvider;
-import com.primetoxinz.stacksonstacks.ingot.DummyStack;
+import com.primetoxinz.stacksonstacks.core.LogHandler;
 import com.primetoxinz.stacksonstacks.ingot.IngotLocation;
-import com.primetoxinz.stacksonstacks.ingot.IngotType;
-import com.primetoxinz.stacksonstacks.ingot.PartIngot;
+import com.primetoxinz.stacksonstacks.ingot.IngotRegistry;
+import com.primetoxinz.stacksonstacks.ingot.MultiPartIngot;
+
 import lib.utils.RenderUtils;
 import mcmultipart.block.TileMultipartContainer;
-import mcmultipart.multipart.IMultipart;
 import mcmultipart.multipart.IMultipartContainer;
 import mcmultipart.multipart.MultipartHelper;
-import mcmultipart.multipart.MultipartRegistry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
-import static mcmultipart.multipart.MultipartHelper.getPartContainer;
-import static net.minecraft.util.EnumActionResult.FAIL;
-import static net.minecraft.util.EnumActionResult.SUCCESS;
-
 public class IngotPlacer {
-    public static ArrayList<DummyStack> ingotRegistry = new ArrayList<>();
 
     @SubscribeEvent(priority = EventPriority.LOW)
     @SideOnly(Side.CLIENT)
     public final void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
         EntityPlayer player = event.getPlayer();
-        if (canBeIngot(player.getHeldItemMainhand()) || canBeIngot(player.getHeldItemOffhand())) {
+        if (IngotRegistry.isIngotRegistered(player.getHeldItemMainhand()) || IngotRegistry.isIngotRegistered(player.getHeldItemOffhand())) {
             RenderUtils.drawSelectionBox(player, event.getTarget(), 0, event.getPartialTicks());
         }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public final void placeIngot(PlayerInteractEvent.RightClickBlock e) {
-        onItemUse(e.getItemStack(), e.getEntityPlayer(), e.getWorld(), e.getPos(), e.getHand(), e.getFace(), e.getHitVec());
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public void attachCapability(AttachCapabilitiesEvent.TileEntity e) {
-        if (e.getTileEntity() instanceof TileMultipartContainer) {
-            TileMultipartContainer container = (TileMultipartContainer) e.getTileEntity();
-            if (!container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
-                e.addCapability(new ResourceLocation(SoS.MODID, "ingot_capability"), new IngotCountProvider());
-            }
-        }
-    }
-    private static EnumActionResult onItemUse(final ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
-        if (canBeIngot(stack) && player.canPlayerEdit(pos, side, stack)) {
-            place(world, pos, side, hit, stack, player);
+    private static EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, Vec3d hit) {
+        if (IngotRegistry.isIngotRegistered(stack) && player.canPlayerEdit(pos, side, stack)) {
+        	handleIngotPlacement(world, pos, side, hit, stack, player);
             return SUCCESS;
         }
         return FAIL;
     }
     
-    public static boolean canBeIngot(ItemStack stack) {
-        if (stack != null) {
-	        DummyStack dummy = new DummyStack(stack);
-	        if(ingotRegistry.contains(dummy)) {
-	            return true;
-	        } else {
-	        	String ingotName = OreDictUtil.getOreDictionaryNameStartingWith(stack, "ingot");
-	        	if(ingotName != null) {
-	        		ingotRegistry.add(dummy);
-	        		return true;
-	        	}
-	        }
+    private static void handleIngotPlacement(World world, BlockPos placePos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
+        IMultipartContainer container = MultipartHelper.getPartContainer(world, placePos);
+      
+        if (container != null) {
+            if(!isContainerFull((TileMultipartContainer) container) {
+            	if(canAddIngotToContainer(world, pos, ingot)) {
+
+            	
+            } else {
+            	handleIngotPlacement(world, placePos.up(), side, hit, stack, player);
+
+            }
+        } else {
+            if(world.getTileEntity(pos) != null)
+                return;
+            placePos = pos.offset(side);
         }
+    }
+
+    private static boolean canAddIngotToContainer(IMultipartContainer container, MultiPartpart ingot) {
+        IMultipartContainer container = getPartContainer(world, pos);
+        if (container != null) {
+            return container.canAddPart(ingot);
+        }
+        
         return false;
     }
 
-    private static boolean canAddPart(World world, BlockPos pos, PartIngot ingot) {
-        IMultipartContainer container = getPartContainer(world, pos);
-        if (container == null) {
-            if(!world.getBlockState(pos).getMaterial().isReplaceable())
-                return false;
-            List<AxisAlignedBB> list = new ArrayList<AxisAlignedBB>();
-            for (AxisAlignedBB bb : list)
-                if (!world.checkNoEntityCollision(bb.offset(pos.getX(), pos.getY(), pos.getZ()))) return false;
-            Collection<? extends IMultipart> parts = MultipartRegistry.convert(world, pos, true);
-            if (parts != null && !parts.isEmpty()) {
-                TileMultipartContainer tmp = new TileMultipartContainer();
-                for (IMultipart p : parts)
-                    tmp.getPartContainer().addPart(p, false, false, false, false, UUID.randomUUID());
-                return tmp.canAddPart(ingot);
-            }
-            return true;
-        } else {
-            return container.canAddPart(ingot);
-        }
+ /*
+    if(!world.getBlockState(pos).getMaterial().isReplaceable())
+        return false;
+    List<AxisAlignedBB> list = new ArrayList<AxisAlignedBB>();
+    for (AxisAlignedBB bb : list)
+        if (!world.checkNoEntityCollision(bb.offset(pos.getX(), pos.getY(), pos.getZ()))) return false;
+    Collection<? extends IMultipart> parts = MultipartRegistry.convert(world, pos, true);
+    if (parts != null && !parts.isEmpty()) {
+        TileMultipartContainer tmp = new TileMultipartContainer();
+        for (IMultipart p : parts)
+            tmp.getPartContainer().addPart(p, false, false, false, false, UUID.randomUUID());
+        return tmp.canAddPart(ingot);
     }
-
+   */
     private static Vec3d nextHit(Vec3d hit) {
         double x = hit.xCoord;
         double y = hit.yCoord;
         double z = hit.zCoord;
-        if(x>.5f) {
-            z+=.25f;
-            if(z > .75f) {
-                y+=.125f;
+        
+        double xReflection = 1/2;
+        double zRelection = 3/4;
+        
+        double xOffset = 1/2;
+        double yOffset = 1/8;
+        double zOffset = 1/4;
+        if(x > xReflection) {
+            z += zOffset;
+            if(z > zRelection) {
+                y += yOffset;
                 z=0;
             }
-            x=0;
+            x = 0;
         } else {
-            x+=.5f;
+            x += xOffset;
         }
         return new Vec3d(x,y,z);
     }
 
 
-
-    private static void place(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
-        IMultipartContainer container = MultipartHelper.getPartContainer(world, pos);
-        BlockPos place = pos;
-        boolean full = isContainerFull((TileMultipartContainer) container);
-        if (container != null) {
-            if(full) {
-                place=pos.up();
-                IMultipartContainer next = MultipartHelper.getPartContainer(world, place);
-                if(next != null) {
-                    place(world,place,side,hit,stack,player);
-                }
-            }
-        } else {
-            if(world.getTileEntity(pos) != null)
-                return;
-            place=pos.offset(side);
-        }
-        if (player.isSneaking()) {
-            placeAll(world, place, stack, player);
-        } else if(!full){
-            place(world, place, hit, stack, player);
-        }
-    }
 
     private static void placeAll(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
         new Thread(() -> {
@@ -167,8 +130,9 @@ public class IngotPlacer {
     }
 
     private static void place(World world, BlockPos pos, Vec3d hit, ItemStack stack, EntityPlayer player) {
+    	LogHandler.logInfo("Placing Ingot");
         IngotLocation location = IngotLocation.fromHit(hit, player.getHorizontalFacing().getAxis());
-        PartIngot part = new PartIngot(location, new IngotType(stack));
+        MultiPartIngot part = new MultiPartIngot(location, IngotRegistry.getRegisteredIngot(stack));
         if (canAddPart(world, pos, part)) {
             if (!world.isRemote) {
                 try {
@@ -180,21 +144,24 @@ public class IngotPlacer {
         }
     }
 
-    public static boolean isContainerFull(TileMultipartContainer container) {
-
-        if (container != null && container.hasCapability(IngotCapabilities.CAPABILITY_INGOT, null)) {
-            IIngotCount cap = container.getCapability(IngotCapabilities.CAPABILITY_INGOT, null);
+    public static boolean isContainerFull(@Nonnull TileMultipartContainer container) {
+        if (container.hasCapability(IngotCountProvider.CAPABILITY_INGOT_COUNT, null)) {
+            IIngotCount cap = container.getCapability(IngotCountProvider.CAPABILITY_INGOT_COUNT, null);
             return cap.isFull();
         }
+        
         return false;
     }
 
     private static void consumeItem(EntityPlayer player, ItemStack stack) {
-        if (!player.isCreative())
+        if (!player.isCreative()) {
             stack.stackSize--;
-        if (stack.stackSize <= 0 && player.getActiveHand() != null) {
-            player.setHeldItem(player.getActiveHand(), null);
+            if (stack.stackSize <= 0 && player.getActiveHand() != null) {
+                player.setHeldItem(player.getActiveHand(), null);
+            }
         }
+        
+
     }
 
 

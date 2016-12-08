@@ -1,7 +1,7 @@
-package com.primetoxinz.stacksonstacks.proxy;
+package com.primetoxinz.stacksonstacks.core;
 
-import com.primetoxinz.stacksonstacks.SoS;
-import com.primetoxinz.stacksonstacks.ingot.PartIngot;
+import com.primetoxinz.stacksonstacks.StacksOnStacks;
+import com.primetoxinz.stacksonstacks.ingot.MultiPartIngot;
 import com.primetoxinz.stacksonstacks.render.ModelLoader;
 import mcmultipart.client.multipart.MultipartRegistryClient;
 import net.minecraft.util.ResourceLocation;
@@ -12,7 +12,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void pre(FMLPreInitializationEvent e) {
         ModelLoaderRegistry.registerLoader(new ModelLoader());
-        MultipartRegistryClient.registerColorProvider(new ResourceLocation(SoS.MODID,"partIngot"),new PartIngot());
+        //MultipartRegistryClient.registerColorProvider(new ResourceLocation(SoS.MODID,"partIngot"),new MultiPartIngot());
     }
 
 }
