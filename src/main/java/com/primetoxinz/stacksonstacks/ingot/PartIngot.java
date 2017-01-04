@@ -170,7 +170,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
     @Override
     public void harvest(EntityPlayer player, PartMOP hit) {
         if( player != null && player.isSneaking()) {
-            dropAll(player,MultipartHelper.getPartContainer(player.worldObj,hit.getBlockPos()));
+            dropAll(player,MultipartHelper.getPartContainer(player.world,hit.getBlockPos()));
         } else {
             World world = getWorld();
             BlockPos pos = getPos();
@@ -182,7 +182,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
                     if(player == null || !player.inventory.addItemStackToInventory(stack)) {
                         EntityItem item = new EntityItem(world, x, y, z,stack);
                         item.setDefaultPickupDelay();
-                        world.spawnEntityInWorld(item);
+                        world.spawnEntity(item);
                     }
                 }
             }
@@ -211,7 +211,7 @@ public class PartIngot extends Multipart implements IRenderComparable<PartIngot>
             if(player == null || !player.inventory.addItemStackToInventory(getDrops().get(0))) {
                 EntityItem item = new EntityItem(world, x, y, z, getDrops().get(0));
                 item.setDefaultPickupDelay();
-                world.spawnEntityInWorld(item);
+                world.spawnEntity(item);
             }
         }
         if (getContainer() != null && getContainer().getParts() != null && !getContainer().getParts().isEmpty())

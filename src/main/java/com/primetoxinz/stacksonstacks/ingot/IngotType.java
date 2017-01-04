@@ -91,7 +91,7 @@ public class IngotType {
     }
 
     public void writeUpdatePacket(PacketBuffer buf) {
-        buf.writeItemStackToBuffer(stack);
+        buf.writeItemStack(stack);
         buf.writeInt(color);
 
     }
@@ -99,7 +99,7 @@ public class IngotType {
     public static IngotType readUpdatePacket(PacketBuffer buf) {
         ItemStack stack = null;
         try {
-            stack = buf.readItemStackFromBuffer();
+            stack = buf.readItemStack();
         } catch (IOException e) {
             e.printStackTrace();
         }
