@@ -23,7 +23,6 @@ public class RegistrationHandler {
 				return itemRegistry;
 			}
 		}
-
 		return null;
 	}
 				

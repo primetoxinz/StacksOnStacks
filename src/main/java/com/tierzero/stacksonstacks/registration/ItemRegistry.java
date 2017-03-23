@@ -27,6 +27,9 @@ public class ItemRegistry {
 			if(registeredItem != null) {
 				registry.add(registeredItem);
 				return true;
+			} else {
+				registry.add(new RegisteredItem(itemStack.getItem(),itemStack.getMetadata()));
+				return true;
 			}
 		}
 		return false;
@@ -45,9 +48,7 @@ public class ItemRegistry {
 					return registeredItem;
 				}
 			}
-			return new RegisteredItem(itemStack.getItem(), itemStack.getMetadata());
 		}
-		
 		return null;
 	}
 

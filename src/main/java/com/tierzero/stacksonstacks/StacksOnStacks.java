@@ -42,6 +42,7 @@ public class StacksOnStacks {
 		RegistrationHandler.loadRegistries();
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
 
+		proxy.preInit(event);
 	}
 	
 	@Mod.EventHandler

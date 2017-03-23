@@ -2,7 +2,7 @@ package com.tierzero.stacksonstacks.lib;
 
 public class LibCore {
 
-	public static final String MOD_ID = "stackonstacks";
+	public static final String MOD_ID = "stacksonstacks";
 	public static final String MOD_NAME = "Stacks On Stacks";
 	public static final String VERSION = "${VERSION}";
 	public static final String DEPENDENCIES = "";

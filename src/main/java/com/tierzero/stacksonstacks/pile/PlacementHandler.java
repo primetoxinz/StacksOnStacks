@@ -24,7 +24,7 @@ public class PlacementHandler {
             return;
         if (event.getItemStack() != null) {
             RegisteredItem item = RegistrationHandler.getRegisteredItem(event.getItemStack(), EnumRegisteredItemType.INGOT);
-            if (item != null) {
+            if(item != null) {
                 createContainer(event.getWorld(), event.getEntityPlayer(), new RayTraceResult(event.getHitVec(), event.getFace(), event.getPos()), item);
             }
         }

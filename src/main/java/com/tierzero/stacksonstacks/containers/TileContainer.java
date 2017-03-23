@@ -102,7 +102,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
                     while (stack.getCount() > 0) {
                         if (!stack.isEmpty() && pile.addPileItem(world, player, rayTraceResult, this, item)) {
                             SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
-                            world.playSound(player,pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+                            world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
                             stack.shrink(1);
                         }
                     }
@@ -142,8 +142,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
         }
     }
 
-    @Override
-    public boolean hasFastRenderer() {
-        return true;
+    public Pile getPile() {
+        return pile;
     }
 }
