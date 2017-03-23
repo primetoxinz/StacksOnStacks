@@ -6,7 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public class PileItem implements INBTSerializable<NBTTagCompound> {
+public class PileItem {
 
 	private static final String NBT_TAG_REGISTERED_ITEM = "registeredItem";
 	private static final String NBT_TAG_RELATIVE_BLOCK_POS = "relativeBlockPos";
@@ -23,22 +23,22 @@ public class PileItem implements INBTSerializable<NBTTagCompound> {
 		return registeredItem;
 	}
 	
-	public BlockPos getRelativeBlockPos() {
+	public RelativeBlockPos getRelativeBlockPos() {
 		return relativeBlockPos;
 	}
 
-	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();
 		tag.setTag(NBT_TAG_REGISTERED_ITEM, registeredItem.serializeNBT());
 		tag.setTag(NBT_TAG_RELATIVE_BLOCK_POS, relativeBlockPos.serializeNBT());
-		return null;
+		return tag;
 	}
 
-	@Override
-	public void deserializeNBT(NBTTagCompound tag) {
-		RegisteredItem registeredItem = tag.getTag(NBT_TAG_REGISTERED_ITEM);
+	public static PileItem getFromDeserializeNBT(NBTTagCompound tag) {
+		RegisteredItem registeredItem = RegisteredItem.getFromDeserializedNBT(tag.getCompoundTag(NBT_TAG_REGISTERED_ITEM));
+		RelativeBlockPos relativeBlockPos = RelativeBlockPos.getFromDeserializeNBT(tag.getCompoundTag(NBT_TAG_RELATIVE_BLOCK_POS));
 		
+		return new PileItem(registeredItem, relativeBlockPos);
 	}
 	
 }

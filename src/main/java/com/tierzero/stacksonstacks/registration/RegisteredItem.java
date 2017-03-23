@@ -16,10 +16,10 @@ import net.minecraft.nbt.NBTTagCompound;
  * @author Madxmike
  *
  */
-public class RegisteredItem implements IImmutableNBTSerializer<RegisteredItem> {
+public class RegisteredItem {
 
 	private static final String NBT_TAG_ITEM_STACK = "itemStack";
-	
+		
 	private Item item;
 	private int metadata;
 	
@@ -52,7 +52,6 @@ public class RegisteredItem implements IImmutableNBTSerializer<RegisteredItem> {
 		return getItem().equals(itemStack.getItem()) && (getMetadata() == itemStack.getMetadata());
 	}
 
-	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();
 		ItemStack registeredItemStack = asItemStack();
@@ -60,17 +59,12 @@ public class RegisteredItem implements IImmutableNBTSerializer<RegisteredItem> {
 		return tag;
 	}
 
-	@Override
-	public RegisteredItem getFromDeserializedNBT(NBTTagCompound tag) {
+	public static RegisteredItem getFromDeserializedNBT(NBTTagCompound tag) {
 		ItemStack registeredItemStack = new ItemStack(tag.getCompoundTag(NBT_TAG_ITEM_STACK));
-		RegisteredItem registeredItem;
 		
-		//If the itemstack ended up null then we just use stone as a generic replacement
+		//If the itemstack ended up null then we just use stone as a generic replacement, and register it so everything keeps working
 		if(registeredItemStack.func_190926_b()) {
-			registeredItem = new RegisteredItem(Item.getItemFromBlock(Blocks.STONE), 0);
-			
-		
-			return 
+			return new RegisteredItem(Item.getItemFromBlock(Blocks.STONE), 0);
 		}
 		
 		return new RegisteredItem(registeredItemStack.getItem(), registeredItemStack.getMetadata());

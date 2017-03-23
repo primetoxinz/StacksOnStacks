@@ -3,7 +3,6 @@ package com.tierzero.stacksonstacks.pile;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.INBTSerializable;
 
 public class RelativeBlockPos extends BlockPos {
 
@@ -25,7 +24,7 @@ public class RelativeBlockPos extends BlockPos {
 		return null;
 	}
 
-	public RelativeBlockPos getFromNBT(NBTTagCompound tag) { 
+	public static RelativeBlockPos getFromDeserializeNBT(NBTTagCompound tag) { 
 		EnumFacing.Axis axis = EnumFacing.Axis.X;
 		if(tag.hasKey(NBT_TAG_AXIS)) {
 			axis = EnumFacing.Axis.values()[tag.getInteger(NBT_TAG_AXIS)];

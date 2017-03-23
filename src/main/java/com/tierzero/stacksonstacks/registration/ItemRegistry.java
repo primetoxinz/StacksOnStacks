@@ -24,7 +24,7 @@ public class ItemRegistry {
 		//func_190926_b = isEmpty in currentMappings
 		if(!itemStack.func_190926_b()) {
 			RegisteredItem registeredItem = getRegisteredItem(itemStack);
-			if(registeredItem == null) {
+			if(registeredItem != null) {
 				registry.add(registeredItem);
 				return true;
 			}
