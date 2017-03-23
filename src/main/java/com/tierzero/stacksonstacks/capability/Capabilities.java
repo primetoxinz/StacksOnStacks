@@ -27,7 +27,7 @@ public class Capabilities {
 
             @Override
             public void readNBT(Capability<IPile> capability, IPile instance, EnumFacing side, NBTBase nbt) {
-                instance.deserializeNBT((NBTTagCompound) nbt);
+                ((Pile)instance).deserializeNBT((NBTTagCompound) nbt);
             }
         }, Pile.class);
     }

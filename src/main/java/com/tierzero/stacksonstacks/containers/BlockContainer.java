@@ -1,7 +1,10 @@
 package com.tierzero.stacksonstacks.containers;
 
+import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
+import com.tierzero.stacksonstacks.registration.RegistrationHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,6 +27,7 @@ public class BlockContainer extends Block implements ITileEntityProvider {
         return new TileContainer();
     }
 
+
     @Override
     public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
         TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
@@ -35,11 +39,25 @@ public class BlockContainer extends Block implements ITileEntityProvider {
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
         RayTraceResult result = new RayTraceResult(new Vec3d(hitX, hitY, hitZ), side, pos);
-        if (playerIn.isSneaking()) {
-            tile.onPlayerShiftRightClick(worldIn, playerIn, result);
-        } else {
-            tile.onPlayerRightClick(worldIn, playerIn, result);
+        if (RegistrationHandler.isRegistered(playerIn.getHeldItem(hand), EnumRegisteredItemType.INGOT)) {
+            if (playerIn.isSneaking()) {
+                return tile.onPlayerShiftRightClick(worldIn, playerIn, result);
+            } else {
+                return tile.onPlayerRightClick(worldIn, playerIn, result);
+            }
         }
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, side, hitX, hitY, hitZ);
+    }
+
+    @Override
+    public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
+        TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
+        tile.dropItems(player);
+        super.onBlockHarvested(worldIn, pos, state, player);
+    }
+
+    @Override
+    public SoundType getSoundType() {
+        return SoundType.METAL;
     }
 }

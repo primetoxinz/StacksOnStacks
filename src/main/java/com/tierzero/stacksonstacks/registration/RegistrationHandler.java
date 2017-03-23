@@ -47,4 +47,8 @@ public class RegistrationHandler {
 		RegisteredItem item = registry.getRegisteredItem(stack);
 		return item;
 	}
+
+	public static boolean isRegistered(ItemStack stack, EnumRegisteredItemType type) {
+		return getRegisteredItem(stack, type) != null;
+	}
 }

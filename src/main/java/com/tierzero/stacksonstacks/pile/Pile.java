@@ -19,10 +19,10 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 
 	private EnumRegisteredItemType type;
 	private List<PileItem> storedItems;
-	
+
 	public Pile(EnumRegisteredItemType type) {
 		this.type = type;
-		this.storedItems = new ArrayList<PileItem>();
+		this.storedItems = new ArrayList<>();
 	}
 	
 	public boolean addPileItem(World world, EntityPlayer player, RayTraceResult rayTraceResult, IPileContainer pileContainer, PileItem pileItem) {
@@ -41,7 +41,7 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 		}
 		
 		this.storedItems.add(pileItem);
-		
+
 		return true;
 	}
 	
@@ -53,11 +53,12 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 				return pileItem;
 			}
 		}
-		
-		
 		return null;
 	}
-		
+
+	public List<PileItem> getItems() {
+		return storedItems;
+	}
 	
 	@Override
 	public NBTTagCompound serializeNBT() {
@@ -82,6 +83,7 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 		for(int iter = 0; iter < tag.getInteger(NBT_TAG_STORED_ITEMS_COUNT); iter++) {
 			storedItems.add(PileItem.getFromDeserializeNBT(storedItemsTag.getCompoundTag(String.valueOf(iter))));
 		}
+		System.out.println(storedItems);
 	}
 
 	@Override
@@ -93,4 +95,5 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 	public int getMaxStoredAmount() {
 		return type.getMaxStackSize();
 	}
+
 }
