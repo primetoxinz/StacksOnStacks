@@ -1,13 +1,11 @@
 package com.tierzero.stacksonstacks.registration;
 
+import com.tierzero.stacksonstacks.core.LogHandler;
+import com.tierzero.stacksonstacks.util.OreDictUtil;
+import net.minecraft.item.ItemStack;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.tierzero.stacksonstacks.core.LogHandler;
-import com.tierzero.stacksonstacks.lib.LibRegistries;
-import com.tierzero.stacksonstacks.util.OreDictUtil;
-
-import net.minecraft.item.ItemStack;
 
 public class RegistrationHandler {
 
@@ -25,7 +23,7 @@ public class RegistrationHandler {
 				return itemRegistry;
 			}
 		}
-		
+
 		return null;
 	}
 				
@@ -37,8 +35,10 @@ public class RegistrationHandler {
 		
 		if(ingotRegistry != null) {
 			for(ItemStack itemStack : ingotStacksToRegister) {
-				ingotRegistry.registerItemStack(itemStack);
-			}	
+				if(ingotRegistry.registerItemStack(itemStack)) {
+					LogHandler.logInfo("Registering " + itemStack.getDisplayName() + " to Registry " + ingotRegistry.getRegisteredItemType());
+				}
+			}
 		}
 	}	
 }

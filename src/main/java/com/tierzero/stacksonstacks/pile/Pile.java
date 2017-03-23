@@ -1,16 +1,14 @@
 package com.tierzero.stacksonstacks.pile;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
-import com.tierzero.stacksonstacks.util.RelativeBlockPosUtils;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pile implements INBTSerializable<NBTTagCompound> {
 	
@@ -84,7 +82,6 @@ public class Pile implements INBTSerializable<NBTTagCompound> {
 		for(int iter = 0; iter < tag.getInteger(NBT_TAG_STORED_ITEMS_COUNT); iter++) {
 			storedItems.add(PileItem.getFromDeserializeNBT(storedItemsTag.getCompoundTag(String.valueOf(iter))));
 		}
-		
 	}
 
 }

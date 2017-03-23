@@ -1,9 +1,9 @@
 package com.tierzero.stacksonstacks.registration;
 
+import net.minecraft.item.ItemStack;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.item.ItemStack;
 
 public class ItemRegistry {
 	
@@ -45,12 +45,18 @@ public class ItemRegistry {
 					return registeredItem;
 				}
 			}
+			return new RegisteredItem(itemStack.getItem(), itemStack.getMetadata());
 		}
 		
 		return null;
 	}
-	
+
 	public EnumRegisteredItemType getRegisteredItemType() {
 		return type;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s : %s", type, registry);
 	}
 }

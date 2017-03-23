@@ -1,19 +1,27 @@
 package com.tierzero.stacksonstacks.pile;
 
-import net.minecraft.util.math.RayTraceResult;
+import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
+import com.tierzero.stacksonstacks.registration.ItemRegistry;
+import com.tierzero.stacksonstacks.registration.RegisteredItem;
+import com.tierzero.stacksonstacks.registration.RegistrationHandler;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PlacementHandler {
 	
-	@SideOnly(Side.SERVER)
+//	@SideOnly(Side.SERVER)
 	@SubscribeEvent
-	public static void onPlayerInteractEvent(PlayerInteractEvent event) {
-		RayTraceResult playerRayTrace = event.getEntityPlayer().rayTrace(3, 1);
-		
-		System.out.println(playerRayTrace.getBlockPos());
+	public void onPlayerInteractEvent(PlayerInteractEvent.RightClickBlock event) {
+		if(event.getSide() == Side.SERVER) {
+			if (event.getItemStack() != null) {
+				ItemRegistry registry = RegistrationHandler.getItemRegistryForType(EnumRegisteredItemType.INGOT);
+				RegisteredItem item = registry.getRegisteredItem(event.getItemStack());
+				if(item != null) {
+                    
+                }
+			}
+		}
 	}
 	
 }
