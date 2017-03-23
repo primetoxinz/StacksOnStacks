@@ -40,5 +40,11 @@ public class RegistrationHandler {
 				}
 			}
 		}
-	}	
+	}
+
+	public static RegisteredItem getRegisteredItem(ItemStack stack, EnumRegisteredItemType type) {
+		ItemRegistry registry = RegistrationHandler.getItemRegistryForType(type);
+		RegisteredItem item = registry.getRegisteredItem(stack);
+		return item;
+	}
 }

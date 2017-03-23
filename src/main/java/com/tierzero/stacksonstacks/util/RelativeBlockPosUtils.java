@@ -1,12 +1,13 @@
 package com.tierzero.stacksonstacks.util;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3d;
 
 public class RelativeBlockPosUtils {
 
-	public static BlockPos getRelativeBlockPositionFromMOPHit(Vec3i hit) {
-		return BlockPos.ORIGIN;
+	public static RelativeBlockPos getRelativeBlockPositionFromMOPHit(Vec3d hit) {
+		return new RelativeBlockPos(hit.xCoord,hit.yCoord,hit.zCoord, EnumFacing.Axis.X);
 	}
 	
 }

@@ -1,5 +1,6 @@
 package com.tierzero.stacksonstacks.pile;
 
+import com.tierzero.stacksonstacks.capability.IPile;
 import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -10,7 +11,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pile implements INBTSerializable<NBTTagCompound> {
+public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 	
 	private static final String NBT_TAG_TYPE = "type";
 	private static final String NBT_TAG_STORED_ITEMS = "storedItems";
@@ -25,9 +26,8 @@ public class Pile implements INBTSerializable<NBTTagCompound> {
 	}
 	
 	public boolean addPileItem(World world, EntityPlayer player, RayTraceResult rayTraceResult, IPileContainer pileContainer, PileItem pileItem) {
-		if((type.getMaxStackSize() - storedItems.size()) <= 0) {
+		if((getMaxStoredAmount() - getStoredAmount()) <= 0) {
 			IPileContainer nextPileContainer = pileContainer.getNextPileContainer();
-			
 			if(nextPileContainer != null) {
 				if(player.isSneaking()) {
 					return nextPileContainer.onPlayerShiftRightClick(world, player, rayTraceResult);
@@ -84,4 +84,13 @@ public class Pile implements INBTSerializable<NBTTagCompound> {
 		}
 	}
 
+	@Override
+	public int getStoredAmount() {
+		return storedItems.size();
+	}
+
+	@Override
+	public int getMaxStoredAmount() {
+		return type.getMaxStackSize();
+	}
 }

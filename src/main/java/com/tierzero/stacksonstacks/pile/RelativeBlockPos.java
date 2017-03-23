@@ -12,11 +12,13 @@ public class RelativeBlockPos extends BlockPos {
 	private static final String NBT_TAG_AXIS = "axis";
 
 	private EnumFacing.Axis axis;
-	
+
 	public RelativeBlockPos(double x, double y, double z, EnumFacing.Axis axis) {
 		super(x, y, z);
 		this.axis = axis;
 	}
+
+
 
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();

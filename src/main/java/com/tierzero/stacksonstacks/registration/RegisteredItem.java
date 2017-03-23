@@ -1,13 +1,11 @@
 package com.tierzero.stacksonstacks.registration;
 
-import javax.annotation.Nonnull;
-
-import com.tierzero.stacksonstacks.util.IImmutableNBTSerializer;
-
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+
+import javax.annotation.Nonnull;
 
 
 /**
@@ -63,7 +61,7 @@ public class RegisteredItem {
 		ItemStack registeredItemStack = new ItemStack(tag.getCompoundTag(NBT_TAG_ITEM_STACK));
 		
 		//If the itemstack ended up null then we just use stone as a generic replacement, and register it so everything keeps working
-		if(registeredItemStack.func_190926_b()) {
+		if(registeredItemStack.isEmpty()) {
 			return new RegisteredItem(Item.getItemFromBlock(Blocks.STONE), 0);
 		}
 		

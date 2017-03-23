@@ -22,7 +22,7 @@ public class ItemRegistry {
 	 */
 	public boolean registerItemStack(ItemStack itemStack) {
 		//func_190926_b = isEmpty in currentMappings
-		if(!itemStack.func_190926_b()) {
+		if(!itemStack.isEmpty()) {
 			RegisteredItem registeredItem = getRegisteredItem(itemStack);
 			if(registeredItem != null) {
 				registry.add(registeredItem);
@@ -39,7 +39,7 @@ public class ItemRegistry {
 	 */
 	public RegisteredItem getRegisteredItem(ItemStack itemStack) {
 		//func_190926_b = isEmpty in currentMappings
-		if(!itemStack.func_190926_b()) {
+		if(!itemStack.isEmpty()) {
 			for (RegisteredItem registeredItem : registry) {
 				if(registeredItem.isItemStack(itemStack)) {
 					return registeredItem;
