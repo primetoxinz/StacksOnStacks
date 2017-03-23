@@ -4,12 +4,12 @@ import com.tierzero.stacksonstacks.containers.TileContainer;
 import com.tierzero.stacksonstacks.lib.LibCore;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.PileItem;
-import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
@@ -49,43 +49,50 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
 
     @Override
     public void renderTileEntityAt(TileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
-
         GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
 
+        // Translate to the location of our tile entity
         GlStateManager.translate(x, y, z);
-        GlStateManager.disableRescaleNormal();
-        Tessellator tessellator = Tessellator.getInstance();
+//        GlStateManager.disableRescaleNormal();
         Pile pile = te.getPile();
-        VertexBuffer buffer = tessellator.getBuffer();
-        World world = te.getWorld();
-
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-        Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(world, getBakedModel(), world.getBlockState(te.getPos()), te.getPos(), buffer, false);
-        tessellator.draw();
-//
-//        for (PileItem item : pile.getItems()) {
-////            System.out.println(item);
-//            renderIngot(te, item, x, y, z, partialTicks, Tessellator.getInstance().getBuffer());
-//        }
+        // Render the rotating handles
+        for(PileItem item: pile.getItems()) {
+            renderIngot(te,item);
+        }
 
         GlStateManager.popMatrix();
         GlStateManager.popAttrib();
     }
 
 
-    public void renderIngot(TileContainer te, PileItem item, double x, double y, double z, float partialTicks, VertexBuffer buffer) {
-        GlStateManager.pushMatrix();
+    public void renderIngot(TileContainer te, PileItem item) {
+            GlStateManager.pushMatrix();
+            RenderHelper.disableStandardItemLighting();
 
-        RelativeBlockPos rPos = item.getRelativeBlockPos();
-        BlockPos pos = rPos.add(x, y, z);
-        World world = te.getWorld();
+            BlockPos pos = item.getRelativeBlockPos().add(te.getPos());
+            this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            if (Minecraft.isAmbientOcclusionEnabled()) {
+                GlStateManager.shadeModel(GL11.GL_SMOOTH);
+            } else {
+                GlStateManager.shadeModel(GL11.GL_FLAT);
+            }
 
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-        Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(world, getBakedModel(), world.getBlockState(te.getPos()), te.getPos(), buffer, false);
-//        tessellator.draw();
+            World world = te.getWorld();
+            // Translate back to local view coordinates so that we can do the acual rendering here
+            GlStateManager.translate(-pos.getX(), -pos.getY(), -pos.getZ());
+            Tessellator tessellator = Tessellator.getInstance();
+            tessellator.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+            Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
+                    world,
+                    getBakedModel(),
+                    world.getBlockState(te.getPos()),
+                    te.getPos(),
+                    Tessellator.getInstance().getBuffer(),
+                    true);
+            tessellator.draw();
 
-        GlStateManager.popMatrix();
-
+            RenderHelper.enableStandardItemLighting();
+            GlStateManager.popMatrix();
+        }
     }
-}
