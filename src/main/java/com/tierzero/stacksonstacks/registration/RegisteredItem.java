@@ -15,6 +15,8 @@ import javax.annotation.Nonnull;
  *
  */
 public class RegisteredItem {
+	
+	public static final RegisteredItem DEFAULT = new RegisteredItem(Item.getItemFromBlock(Blocks.STONE), 0);
 
 	private static final String NBT_TAG_ITEM_STACK = "itemStack";
 		
@@ -50,24 +52,6 @@ public class RegisteredItem {
 		return getItem().equals(itemStack.getItem()) && (getMetadata() == itemStack.getMetadata());
 	}
 
-	public NBTTagCompound serializeNBT() {
-		NBTTagCompound tag = new NBTTagCompound();
-		ItemStack registeredItemStack = asItemStack();
-		tag.setTag(NBT_TAG_ITEM_STACK, registeredItemStack.serializeNBT());
-		return tag;
-	}
-
-	public static RegisteredItem getFromDeserializedNBT(NBTTagCompound tag) {
-		ItemStack registeredItemStack = new ItemStack(tag.getCompoundTag(NBT_TAG_ITEM_STACK));
-		
-		//If the itemstack ended up null then we just use stone as a generic replacement, and register it so everything keeps working
-		if(registeredItemStack.isEmpty()) {
-			return new RegisteredItem(Item.getItemFromBlock(Blocks.STONE), 0);
-		}
-		
-		return new RegisteredItem(registeredItemStack.getItem(), registeredItemStack.getMetadata());
-	}
-	
 	@Override
 	public boolean equals(Object object) {
 		if(object == this) return true;

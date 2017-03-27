@@ -1,9 +1,11 @@
 package com.tierzero.stacksonstacks.registration;
 
-import net.minecraft.item.ItemStack;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import net.minecraft.item.ItemStack;
 
 public class ItemRegistry {
 	
@@ -21,7 +23,6 @@ public class ItemRegistry {
 	 * @return True if successful, False if not
 	 */
 	public boolean registerItemStack(ItemStack itemStack) {
-		//func_190926_b = isEmpty in currentMappings
 		if(!itemStack.isEmpty()) {
 			RegisteredItem registeredItem = getRegisteredItem(itemStack);
 			if(registeredItem != null) {
@@ -37,21 +38,15 @@ public class ItemRegistry {
 	
 	/**
 	 * Attempts to get the RegisteredItem object for the itemstack
-	 * @param itemStack - The ItemStack to search with
-	 * @return The RegisteredItem object if found, else null
+	 * @param itemStack - The ItemStack to search for
+	 * @return The RegisteredItem object if found, else the default registered item (Stone)
 	 */
+	@Nonnull
 	public RegisteredItem getRegisteredItem(ItemStack itemStack) {
-		//func_190926_b = isEmpty in currentMappings
-		if(!itemStack.isEmpty()) {
-			for (RegisteredItem registeredItem : registry) {
-				if(registeredItem.isItemStack(itemStack)) {
-					return registeredItem;
-				}
-			}
-		}
-		return null;
+		return registry.stream().filter(registeredItem -> registeredItem.isItemStack(itemStack)).findFirst().orElse(RegisteredItem.DEFAULT);
 	}
-
+	
+	
 	public EnumRegisteredItemType getRegisteredItemType() {
 		return type;
 	}

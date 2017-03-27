@@ -1,15 +1,16 @@
 package com.tierzero.stacksonstacks.pile;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tierzero.stacksonstacks.capability.IPile;
 import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 	
@@ -26,8 +27,10 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 	}
 	
 	public boolean addPileItem(World world, EntityPlayer player, RayTraceResult rayTraceResult, IPileContainer pileContainer, PileItem pileItem) {
-		if(getPileItemAtRelativeBlockPos(pileItem.getRelativeBlockPos()) != null)
+		if(getPileItemAtRelativeBlockPos(pileItem.getRelativeBlockPos()) != null) {
 			return false;
+		}
+		
 		if((getMaxStoredAmount() - getStoredAmount()) <= 0) {
 			IPileContainer nextPileContainer = pileContainer.getNextPileContainer();
 			if(nextPileContainer != null) {
@@ -72,7 +75,7 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 		
 		NBTTagCompound storedItemsTag = tag.getCompoundTag(NBT_TAG_STORED_ITEMS);
 		for(int iter = 0; iter < tag.getInteger(NBT_TAG_STORED_ITEMS_COUNT); iter++) {
-			storedItems.add(PileItem.getFromDeserializeNBT(storedItemsTag.getCompoundTag(String.valueOf(iter))));
+			storedItems.add(new PileItem(storedItemsTag.getCompoundTag(String.valueOf(iter))));
 		}
 	}
 
