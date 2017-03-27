@@ -4,6 +4,7 @@ import com.tierzero.stacksonstacks.capability.Capabilities;
 import com.tierzero.stacksonstacks.pile.IPileContainer;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.PileItem;
+import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
 import com.tierzero.stacksonstacks.registration.RegisteredItem;
 import com.tierzero.stacksonstacks.registration.RegistrationHandler;
@@ -20,6 +21,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
@@ -63,22 +65,39 @@ public class TileContainer extends TileEntity implements IPileContainer {
         return false;
     }
 
+    public boolean place(World world, EntityPlayer player, ItemStack stack, RayTraceResult result, RelativeBlockPos relativeBlockPos) {
+        RegisteredItem registeredItem = RegistrationHandler.getRegisteredItem(stack, EnumRegisteredItemType.INGOT);
+        if (registeredItem == null)
+            return false;
+        PileItem item = new PileItem(registeredItem, relativeBlockPos);
+        if (item != null) {
+            if (pile.addPileItem(world, player, result, this, item)) {
+                SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
+                world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+                if (!player.isCreative())
+                    stack.shrink(1);
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void placeAll(World world, EntityPlayer player, RayTraceResult result, ItemStack stack) {
+        int i = 0;
+        RelativeBlockPos pos = RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(Vec3d.ZERO);
+        while (i < pile.getMaxStoredAmount() && stack.getCount() > 0) {
+            place(world, player, stack, result, pos);
+            pos = pos.next();
+            i++;
+        }
+    }
+
     @Override
     public boolean onPlayerRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
         if (player.getActiveItemStack() != null) {
             ItemStack stack = player.getHeldItemMainhand();
-            RegisteredItem registeredItem = RegistrationHandler.getRegisteredItem(stack, EnumRegisteredItemType.INGOT);
-            if (registeredItem != null) {
-                PileItem item = new PileItem(registeredItem, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
-                if (item != null) {
-                    if (pile.addPileItem(world, player, rayTraceResult, this, item)) {
-                        SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
-                        world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                        stack.shrink(1);
-                        return true;
-                    }
-                }
-            }
+            return place(world, player, stack, rayTraceResult, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
         }
         return false;
     }
@@ -94,21 +113,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
     public boolean onPlayerShiftRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
         if (player.getActiveItemStack() != null) {
             ItemStack stack = player.getHeldItemMainhand();
-            RegisteredItem registeredItem = RegistrationHandler.getRegisteredItem(stack, EnumRegisteredItemType.INGOT);
-            if (registeredItem != null) {
-                PileItem item = new PileItem(registeredItem, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
-                if (item != null) {
-
-                    while (stack.getCount() > 0) {
-                        if (!stack.isEmpty() && pile.addPileItem(world, player, rayTraceResult, this, item)) {
-                            SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
-                            world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                            stack.shrink(1);
-                        }
-                    }
-                    return true;
-                }
-            }
+            placeAll(world, player, rayTraceResult, stack);
         }
         return false;
     }

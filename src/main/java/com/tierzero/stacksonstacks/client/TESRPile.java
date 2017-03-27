@@ -4,6 +4,7 @@ import com.tierzero.stacksonstacks.containers.TileContainer;
 import com.tierzero.stacksonstacks.lib.LibCore;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.PileItem;
+import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -13,7 +14,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -54,11 +54,11 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
 
         // Translate to the location of our tile entity
         GlStateManager.translate(x, y, z);
-//        GlStateManager.disableRescaleNormal();
+        GlStateManager.disableRescaleNormal();
         Pile pile = te.getPile();
         // Render the rotating handles
-        for(PileItem item: pile.getItems()) {
-            renderIngot(te,item);
+        for (PileItem item : pile.getItems()) {
+            renderIngot(te, item);
         }
 
         GlStateManager.popMatrix();
@@ -67,32 +67,33 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
 
 
     public void renderIngot(TileContainer te, PileItem item) {
-            GlStateManager.pushMatrix();
-            RenderHelper.disableStandardItemLighting();
-
-            BlockPos pos = item.getRelativeBlockPos().add(te.getPos());
-            this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-            if (Minecraft.isAmbientOcclusionEnabled()) {
-                GlStateManager.shadeModel(GL11.GL_SMOOTH);
-            } else {
-                GlStateManager.shadeModel(GL11.GL_FLAT);
-            }
-
-            World world = te.getWorld();
-            // Translate back to local view coordinates so that we can do the acual rendering here
-            GlStateManager.translate(-pos.getX(), -pos.getY(), -pos.getZ());
-            Tessellator tessellator = Tessellator.getInstance();
-            tessellator.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-            Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
-                    world,
-                    getBakedModel(),
-                    world.getBlockState(te.getPos()),
-                    te.getPos(),
-                    Tessellator.getInstance().getBuffer(),
-                    true);
-            tessellator.draw();
-
-            RenderHelper.enableStandardItemLighting();
-            GlStateManager.popMatrix();
+        GlStateManager.pushMatrix();
+        RenderHelper.disableStandardItemLighting();
+        RelativeBlockPos pos = item.getRelativeBlockPos();
+        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        if (Minecraft.isAmbientOcclusionEnabled()) {
+            GlStateManager.shadeModel(GL11.GL_SMOOTH);
+        } else {
+            GlStateManager.shadeModel(GL11.GL_FLAT);
         }
+
+        World world = te.getWorld();
+
+        GlStateManager.translate(-te.getPos().getX(),-te.getPos().getY(),-te.getPos().getZ());
+//        GlStateManager.translate(0,0,0);
+        GlStateManager.translate(pos.getX(),pos.getY(),pos.getZ());
+        Tessellator tessellator = Tessellator.getInstance();
+        tessellator.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
+                world,
+                getBakedModel(),
+                world.getBlockState(te.getPos()),
+                te.getPos(),
+                Tessellator.getInstance().getBuffer(),
+                true);
+        tessellator.draw();
+
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.popMatrix();
     }
+}

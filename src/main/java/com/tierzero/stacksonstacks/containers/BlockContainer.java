@@ -12,6 +12,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -37,6 +38,16 @@ public class BlockContainer extends Block implements ITileEntityProvider {
         TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
         System.out.println("2");
         super.onBlockClicked(worldIn, pos, playerIn);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+
+
+
+
+
+        return super.getBoundingBox(state, source, pos);
     }
 
     @Override

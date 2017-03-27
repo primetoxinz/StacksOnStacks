@@ -9,5 +9,5 @@ public class RelativeBlockPosUtils {
 	public static RelativeBlockPos getRelativeBlockPositionFromMOPHit(Vec3d hit) {
 		return new RelativeBlockPos(hit.xCoord,hit.yCoord,hit.zCoord, EnumFacing.Axis.X);
 	}
-	
+
 }

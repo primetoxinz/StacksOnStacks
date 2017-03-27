@@ -26,6 +26,8 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 	}
 	
 	public boolean addPileItem(World world, EntityPlayer player, RayTraceResult rayTraceResult, IPileContainer pileContainer, PileItem pileItem) {
+		if(getPileItemAtRelativeBlockPos(pileItem.getRelativeBlockPos()) != null)
+			return false;
 		if((getMaxStoredAmount() - getStoredAmount()) <= 0) {
 			IPileContainer nextPileContainer = pileContainer.getNextPileContainer();
 			if(nextPileContainer != null) {
@@ -35,31 +37,20 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 					return nextPileContainer.onPlayerRightClick(world, player, rayTraceResult);
 				}
 			}
-		} else {
-			//RelativeBlockPos rayTracedPosition = RelativeBlockPos.getFromRayTraceResult(rayTraceResult);
-			
 		}
-		
+		System.out.println(pileItem.getRelativeBlockPos());
 		this.storedItems.add(pileItem);
-
 		return true;
 	}
 	
-	public PileItem getPileItemAtRelativeBlockPos(RelativeBlockPos relativeBlockPos) {
-		for(PileItem pileItem : storedItems) {
-			RelativeBlockPos pileItemRelativeBlockPos = pileItem.getRelativeBlockPos();
-			
-			if(pileItemRelativeBlockPos.equals(relativeBlockPos)) {
-				return pileItem;
-			}
-		}
-		return null;
+	public PileItem getPileItemAtRelativeBlockPos(RelativeBlockPos pos) {
+		return storedItems.stream().filter(p -> p.getRelativeBlockPos().equals(pos)).findAny().orElse(null);
 	}
 
 	public List<PileItem> getItems() {
 		return storedItems;
 	}
-	
+
 	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();
@@ -83,7 +74,6 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 		for(int iter = 0; iter < tag.getInteger(NBT_TAG_STORED_ITEMS_COUNT); iter++) {
 			storedItems.add(PileItem.getFromDeserializeNBT(storedItemsTag.getCompoundTag(String.valueOf(iter))));
 		}
-		System.out.println(storedItems);
 	}
 
 	@Override
