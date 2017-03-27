@@ -41,7 +41,6 @@ public class Pile implements IPile, INBTSerializable<NBTTagCompound> {
 				}
 			}
 		}
-		System.out.println(pileItem.getRelativeBlockPos());
 		this.storedItems.add(pileItem);
 		return true;
 	}

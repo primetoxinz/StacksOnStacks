@@ -1,7 +1,5 @@
 package com.tierzero.stacksonstacks.containers;
 
-import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
-import com.tierzero.stacksonstacks.registration.RegistrationHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
@@ -44,9 +42,6 @@ public class BlockContainer extends Block implements ITileEntityProvider {
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
 
 
-
-
-
         return super.getBoundingBox(state, source, pos);
     }
 
@@ -54,14 +49,11 @@ public class BlockContainer extends Block implements ITileEntityProvider {
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
         RayTraceResult result = new RayTraceResult(new Vec3d(hitX, hitY, hitZ), side, pos);
-        if (RegistrationHandler.isRegistered(playerIn.getHeldItem(hand), EnumRegisteredItemType.INGOT)) {
-            if (playerIn.isSneaking()) {
-                return tile.onPlayerShiftRightClick(worldIn, playerIn, result);
-            } else {
-                return tile.onPlayerRightClick(worldIn, playerIn, result);
-            }
+        if (playerIn.isSneaking()) {
+            return tile.onPlayerShiftRightClick(worldIn, playerIn, result);
+        } else {
+            return tile.onPlayerRightClick(worldIn, playerIn, result);
         }
-        return super.onBlockActivated(worldIn, pos, state, playerIn, hand, side, hitX, hitY, hitZ);
     }
 
     @Override

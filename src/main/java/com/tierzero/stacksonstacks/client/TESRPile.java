@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -49,27 +50,14 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
 
     @Override
     public void renderTileEntityAt(TileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
-        GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
 
         // Translate to the location of our tile entity
         GlStateManager.translate(x, y, z);
-        GlStateManager.disableRescaleNormal();
         Pile pile = te.getPile();
-        // Render the rotating handles
-        for (PileItem item : pile.getItems()) {
-            renderIngot(te, item);
-        }
-
-        GlStateManager.popMatrix();
-        GlStateManager.popAttrib();
-    }
 
 
-    public void renderIngot(TileContainer te, PileItem item) {
-        GlStateManager.pushMatrix();
         RenderHelper.disableStandardItemLighting();
-        RelativeBlockPos pos = item.getRelativeBlockPos();
         this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         if (Minecraft.isAmbientOcclusionEnabled()) {
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
@@ -77,13 +65,30 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
             GlStateManager.shadeModel(GL11.GL_FLAT);
         }
 
+        Tessellator tessellator = Tessellator.getInstance();
+        VertexBuffer buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        GlStateManager.translate(-te.getPos().getX(),-te.getPos().getY(),-te.getPos().getZ());
+        for(PileItem item: pile.getItems()) {
+
+            renderIngot(te,item);
+        }
+        tessellator.draw();
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.popMatrix();
+    }
+
+
+    public void renderIngot(TileContainer te, PileItem item) {
+        Tessellator tessellator = Tessellator.getInstance();
+        VertexBuffer buffer = tessellator.getBuffer();
+
+        RelativeBlockPos pos = item.getRelativeBlockPos();
         World world = te.getWorld();
 
-        GlStateManager.translate(-te.getPos().getX(),-te.getPos().getY(),-te.getPos().getZ());
-//        GlStateManager.translate(0,0,0);
-        GlStateManager.translate(pos.getX(),pos.getY(),pos.getZ());
-        Tessellator tessellator = Tessellator.getInstance();
-        tessellator.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        GlStateManager.pushMatrix();
+        buffer.setTranslation(pos.getX(),pos.getY(),pos.getZ());
+        
         Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
                 world,
                 getBakedModel(),
@@ -91,9 +96,9 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
                 te.getPos(),
                 Tessellator.getInstance().getBuffer(),
                 true);
-        tessellator.draw();
 
-        RenderHelper.enableStandardItemLighting();
+        buffer.setTranslation(0,0,0);
         GlStateManager.popMatrix();
+
     }
 }

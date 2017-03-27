@@ -37,7 +37,6 @@ public class PlacementHandler {
         //play sound
         SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
         world.playSound(player, pos, SoundEvents.BLOCK_METAL_PLACE, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-        System.out.println(ray);
         TileContainer tile = (TileContainer) world.getTileEntity(pos);
         if (player.isSneaking()) {
             tile.onPlayerShiftRightClick(world, player, ray);

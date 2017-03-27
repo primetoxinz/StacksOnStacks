@@ -50,7 +50,6 @@ public class RelativeBlockPos {
     public RelativeBlockPos(double x, double y, double z, EnumFacing.Axis axis) {
         this.axis = axis;
         findGrid();
-        System.out.printf("%s,%s,%s\n", x, y, z);
         this.x = gridX.round(x);
         this.y = gridY.round(y);
         this.z = gridZ.round(z);
@@ -118,22 +117,26 @@ public class RelativeBlockPos {
     @Nullable
     public RelativeBlockPos next() {
         double x = this.x, y = this.y, z = this.z;
-        if(gridX.isMax(x)) {
-            z=gridZ.next(z);
-            if(gridZ.isMax(z)) {
-                y=gridY.next(y);
+        if(x==.5f) {
+            z+=.25f;
+            if(z > .75f) {
+                y+=.125f;
                 z=0;
             }
             x=0;
         } else {
-            x=gridX.next(x);
+            x+=.5f;
         }
-//        if (!gridX.isMax(this.x))
-//            x = gridX.next(this.x);
-//        else if (!gridY.isMax(this.y))
-//            y = gridY.next(this.y);
-//        else if (!gridZ.isMax(this.z))
-//            z = gridZ.next(this.z);
+//        if(gridX.isMax(x)) {
+//            z=gridZ.next(z);
+//            if(gridZ.isMax(z)) {
+//                y=gridY.next(y);
+//                z=0;
+//            }
+//            x=0;
+//        } else {
+//            x=gridX.next(x);
+//        }
         return new RelativeBlockPos(x, y, z, axis);
     }
 }

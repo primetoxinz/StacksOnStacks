@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@Mod(modid = LibCore.MOD_ID, name = LibCore.MOD_NAME, version = LibCore.VERSION, dependencies = LibCore.DEPENDENCIES, acceptedMinecraftVersions = LibCore.REQUIRED_VERSION)
+@Mod(modid = LibCore.MOD_ID, name = LibCore.MOD_NAME, version = LibCore.VERSION, acceptedMinecraftVersions = LibCore.REQUIRED_VERSION)
 public class StacksOnStacks {
 
 	@Instance
