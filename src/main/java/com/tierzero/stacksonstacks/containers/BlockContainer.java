@@ -6,6 +6,7 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -85,5 +86,12 @@ public class BlockContainer extends Block implements ITileEntityProvider {
     @Override
     public boolean isOpaqueCube(IBlockState blockState) {
         return false;
+    }
+
+    @Override
+    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+        TileContainer tile = (TileContainer) world.getTileEntity(pos);
+        tile.dropItems(player);
+        return super.getPickBlock(state, target, world, pos, player);
     }
 }

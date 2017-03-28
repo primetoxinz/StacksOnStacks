@@ -64,7 +64,6 @@ public class TileContainer extends TileEntity implements IPileContainer {
         if (RegistrationHandler.isRegistered(itemStack)) {
             ItemStack ret = pile.insertItem(relativeBlockPos.toSlotIndex(), itemStack, false);
             if (ret != itemStack) {
-                itemStack.setCount(ret.getCount());
                 SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
                 world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
                 return true;
@@ -74,10 +73,10 @@ public class TileContainer extends TileEntity implements IPileContainer {
     }
 
     public void placeAll(World world, EntityPlayer player, RayTraceResult result, ItemStack stack) {
-        for(RelativeBlockPos pos: RelativeBlockPos.positions) {
-            place(world,player,stack,result,pos);
-            if(stack.isEmpty())
-                break;
+        int i = 0;
+        while (i < 64 && stack.getCount() > 0) {
+            place(world, player, stack, result, RelativeBlockPos.fromSlot(i));
+            i++;
         }
     }
 
