@@ -25,9 +25,7 @@ public class PlacementHandler {
     	World world = event.getWorld();
     	TileEntity tileEntityAtPosition = world.getTileEntity(event.getPos());
     	ItemStack heldItemStack = event.getItemStack();
-    	LogHandler.logInfo("wqeqwe");
     	if(tileEntityAtPosition == null && RegistrationHandler.isRegistered(heldItemStack)) {
-    		LogHandler.logInfo("fwfw");
     		RayTraceResult rayTrace = new RayTraceResult(event.getHitVec(), event.getFace(), event.getPos());
     		createContainer(world, event.getEntityPlayer(), rayTrace, heldItemStack);
     	}
