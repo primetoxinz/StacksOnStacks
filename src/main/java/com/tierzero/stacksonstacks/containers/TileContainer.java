@@ -1,14 +1,19 @@
 package com.tierzero.stacksonstacks.containers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import com.tierzero.stacksonstacks.capability.Capabilities;
 import com.tierzero.stacksonstacks.pile.IPileContainer;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.PileItem;
 import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import com.tierzero.stacksonstacks.registration.EnumRegisteredItemType;
-import com.tierzero.stacksonstacks.registration.RegisteredItem;
 import com.tierzero.stacksonstacks.registration.RegistrationHandler;
 import com.tierzero.stacksonstacks.util.RelativeBlockPosUtils;
+
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,10 +32,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemHandlerHelper;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class TileContainer extends TileEntity implements IPileContainer {
     protected Pile pile;
@@ -65,21 +66,21 @@ public class TileContainer extends TileEntity implements IPileContainer {
         return false;
     }
 
-    public boolean place(World world, EntityPlayer player, ItemStack stack, RayTraceResult result, RelativeBlockPos relativeBlockPos) {
-        RegisteredItem registeredItem = RegistrationHandler.getRegisteredItem(stack, EnumRegisteredItemType.INGOT);
-        if (registeredItem == null)
-            return false;
-        PileItem item = new PileItem(registeredItem, relativeBlockPos);
-        if (item != null) {
-            if (pile.addPileItem(world, player, result, this, item)) {
-                SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
-                world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                if (!player.isCreative())
-                    stack.shrink(1);
+    public boolean place(World world, EntityPlayer player, ItemStack itemStack, RayTraceResult result, RelativeBlockPos relativeBlockPos) {
 
+    	if(RegistrationHandler.isRegistered(itemStack)) {
+    		PileItem pileItem = new PileItem(itemStack, relativeBlockPos);
+    		if(pile.addPileItem(world, player, result, this, pileItem)) {
+    			SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
+                world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+                if (!player.isCreative()) {
+                    itemStack.shrink(1);
+                }
+                
                 return true;
-            }
-        }
+    		}
+    	}
+
         return false;
     }
 
@@ -141,7 +142,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
     public void dropItems(EntityPlayer player) {
         if (pile == null)
             return;
-        List<ItemStack> drops = pile.getItems().stream().map(p -> p.getRegisteredItem().asItemStack()).collect(Collectors.toList());
+        List<ItemStack> drops = pile.getItems().stream().map(pileItem -> pileItem.getItemStack()).collect(Collectors.toList());
         for (ItemStack stack : drops) {
             ItemHandlerHelper.giveItemToPlayer(player, stack);
         }

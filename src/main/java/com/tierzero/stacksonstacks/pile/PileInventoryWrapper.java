@@ -26,7 +26,7 @@ public class PileInventoryWrapper implements IItemHandler {
     @Nonnull
     @Override
     public ItemStack getStackInSlot(int slot) {
-        return pile.getItems().get(slot).getRegisteredItem().asItemStack();
+        return pile.getItems().get(slot).getItemStack();
     }
 
     @Nonnull

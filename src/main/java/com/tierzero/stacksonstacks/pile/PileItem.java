@@ -1,12 +1,7 @@
 package com.tierzero.stacksonstacks.pile;
 
-import com.tierzero.stacksonstacks.lib.LibRegistries;
-import com.tierzero.stacksonstacks.registration.RegisteredItem;
-
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class PileItem implements INBTSerializable<NBTTagCompound> {
@@ -14,11 +9,11 @@ public class PileItem implements INBTSerializable<NBTTagCompound> {
 	private static final String NBT_TAG_ITEM_STACK = "itemStack";
 	private static final String NBT_TAG_RELATIVE_BLOCK_POS = "relativeBlockPos";
 	
-	private RegisteredItem registeredItem;
+	private ItemStack itemStack;
 	private RelativeBlockPos relativeBlockPos;
 	
-	public PileItem(RegisteredItem registeredItem, RelativeBlockPos relativeBlockPos) {
-		this.registeredItem = registeredItem;
+	public PileItem(ItemStack itemStack, RelativeBlockPos relativeBlockPos) {
+		this.itemStack = itemStack;
 		this.relativeBlockPos = relativeBlockPos;
 	}
 	
@@ -26,8 +21,8 @@ public class PileItem implements INBTSerializable<NBTTagCompound> {
 		this.deserializeNBT(compoundTag);
 	}
 
-	public RegisteredItem getRegisteredItem() {
-		return registeredItem;
+	public ItemStack getItemStack() {
+		return itemStack;
 	}
 	
 	public RelativeBlockPos getRelativeBlockPos() {
@@ -37,16 +32,14 @@ public class PileItem implements INBTSerializable<NBTTagCompound> {
 	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();
-		tag.setTag(NBT_TAG_ITEM_STACK, registeredItem.asItemStack().serializeNBT());
+		tag.setTag(NBT_TAG_ITEM_STACK, itemStack.serializeNBT());
 		tag.setTag(NBT_TAG_RELATIVE_BLOCK_POS, relativeBlockPos.serializeNBT());
 		return tag;		
 	}
 
 	@Override
 	public void deserializeNBT(NBTTagCompound nbt) {
-		ItemStack itemStack = new ItemStack(nbt.getCompoundTag(NBT_TAG_ITEM_STACK));
-		
-		this.registeredItem = LibRegistries.INGOT_REGISTRY.getRegisteredItem(itemStack);
+		this.itemStack = new ItemStack(nbt.getCompoundTag(NBT_TAG_ITEM_STACK));
 		this.relativeBlockPos = RelativeBlockPos.getFromDeserializeNBT(nbt);
 	}
 	

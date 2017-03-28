@@ -25,29 +25,14 @@ public class RegistrationHandler {
 		}
 		return null;
 	}
-				
-	public static void registerIngots() {
-		List<ItemStack> ingotStacksToRegister = OreDictUtil.findWithPrefix("ingot");
-		ItemRegistry ingotRegistry = getItemRegistryForType(EnumRegisteredItemType.INGOT);
-		
-		LogHandler.logInfo("Registering " + ingotStacksToRegister.size() + " ingots!");
-		
-		if(ingotRegistry != null) {
-			for(ItemStack itemStack : ingotStacksToRegister) {
-				if(ingotRegistry.registerItemStack(itemStack)) {
-					LogHandler.logInfo("Registering " + itemStack.getDisplayName() + " to Registry " + ingotRegistry.getRegisteredItemType());
-				}
-			}
-		}
+	
+	public static boolean isRegistered(ItemStack itemStack) {
+		return registries.stream().anyMatch(registry -> registry.isRegistered(itemStack));
 	}
-
-	public static RegisteredItem getRegisteredItem(ItemStack stack, EnumRegisteredItemType type) {
-		ItemRegistry registry = RegistrationHandler.getItemRegistryForType(type);
-		RegisteredItem item = registry.getRegisteredItem(stack);
-		return item;
-	}
-
-	public static boolean isRegistered(ItemStack stack, EnumRegisteredItemType type) {
-		return getRegisteredItem(stack, type) != null;
+	
+	public static boolean isRegisteredForType(ItemStack itemStack, EnumRegisteredItemType type) {
+		ItemRegistry typeRegistry = registries.stream().filter(registry -> registry.getRegisteredItemType().equals(type)).findFirst().get();
+	
+		return typeRegistry.isRegistered(itemStack);
 	}
 }

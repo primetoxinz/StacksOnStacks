@@ -39,7 +39,6 @@ public class StacksOnStacks {
 
 		LogHandler.initLogger(event.getModLog());
 		ConfigHandler.initConfig(event.getSuggestedConfigurationFile());
-		RegistrationHandler.loadRegistries();
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
 
 		proxy.preInit(event);
@@ -52,7 +51,7 @@ public class StacksOnStacks {
 	
 	@Mod.EventHandler
 	public static void postInit(FMLInitializationEvent event) {
-		RegistrationHandler.registerIngots();
+		RegistrationHandler.loadRegistries();
 	}
 	
 }

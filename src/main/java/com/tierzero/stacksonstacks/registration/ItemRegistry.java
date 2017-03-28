@@ -3,18 +3,37 @@ package com.tierzero.stacksonstacks.registration;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
+import com.tierzero.stacksonstacks.core.ConfigHandler;
+import com.tierzero.stacksonstacks.core.LogHandler;
+import com.tierzero.stacksonstacks.util.OreDictUtil;
 
 import net.minecraft.item.ItemStack;
 
 public class ItemRegistry {
 	
 	private EnumRegisteredItemType type;
-	private List<RegisteredItem> registry;
+	private List<ItemStack> registry;
 	
 	public ItemRegistry(EnumRegisteredItemType type) {
 		this.type = type;
-		this.registry = new ArrayList<RegisteredItem>();
+		this.registry = new ArrayList<ItemStack>();
+		loadFromOreDict();
+	}
+	
+	private void loadFromOreDict() {
+		List<ItemStack> stacksToRegister = OreDictUtil.findWithPrefix(type.getName());
+		
+		if(ConfigHandler.printOnRegistration) {
+			LogHandler.logInfo("Registering " + stacksToRegister.size() + type);
+		}
+		
+		for(ItemStack itemStack : stacksToRegister) {
+			registry.add(itemStack);
+			if(ConfigHandler.printOnRegistration) {
+				LogHandler.logInfo("Registering " + itemStack.getDisplayName() + " to Registry " + type);
+			}
+			
+		}
 	}
 	
 	/**
@@ -23,29 +42,17 @@ public class ItemRegistry {
 	 * @return True if successful, False if not
 	 */
 	public boolean registerItemStack(ItemStack itemStack) {
-		if(!itemStack.isEmpty()) {
-			RegisteredItem registeredItem = getRegisteredItem(itemStack);
-			if(registeredItem != null) {
-				registry.add(registeredItem);
-				return true;
-			} else {
-				registry.add(new RegisteredItem(itemStack.getItem(),itemStack.getMetadata()));
-				return true;
-			}
+		if(!isRegistered(itemStack)) {
+			registry.add(itemStack);
+			return true;
 		}
+		
 		return false;
 	}
 	
-	/**
-	 * Attempts to get the RegisteredItem object for the itemstack
-	 * @param itemStack - The ItemStack to search for
-	 * @return The RegisteredItem object if found, else the default registered item (Stone)
-	 */
-	@Nonnull
-	public RegisteredItem getRegisteredItem(ItemStack itemStack) {
-		return registry.stream().filter(registeredItem -> registeredItem.isItemStack(itemStack)).findFirst().orElse(RegisteredItem.DEFAULT);
+	public boolean isRegistered(ItemStack itemStack) {
+		return registry.stream().anyMatch(stack -> stack.isItemEqual(itemStack));
 	}
-	
 	
 	public EnumRegisteredItemType getRegisteredItemType() {
 		return type;
