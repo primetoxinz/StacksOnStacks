@@ -3,7 +3,6 @@ package com.tierzero.stacksonstacks.client;
 import com.tierzero.stacksonstacks.containers.TileContainer;
 import com.tierzero.stacksonstacks.lib.LibCore;
 import com.tierzero.stacksonstacks.pile.Pile;
-import com.tierzero.stacksonstacks.pile.PileItem;
 import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -14,6 +13,7 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IModel;
@@ -74,9 +74,11 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         GlStateManager.translate(-te.getPos().getX(), -te.getPos().getY(), -te.getPos().getZ());
-        for (PileItem item : pile.getItems()) {
-
-            renderIngot(te, item);
+        for(int slot = 0; slot < pile.getSlots();slot++) {
+            ItemStack stack = pile.getStackInSlot(slot);
+            if(!stack.isEmpty()) {
+                renderIngot(te,slot,stack);
+            }
         }
         tessellator.draw();
         RenderHelper.enableStandardItemLighting();
@@ -84,11 +86,11 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
     }
 
 
-    public void renderIngot(TileContainer te, PileItem item) {
+    public void renderIngot(TileContainer te, int slot, ItemStack item) {
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer buffer = tessellator.getBuffer();
 
-        RelativeBlockPos pos = item.getRelativeBlockPos();
+        RelativeBlockPos pos = RelativeBlockPos.fromSlot(slot);
         World world = te.getWorld();
 
         GlStateManager.pushMatrix();

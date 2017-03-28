@@ -1,9 +1,6 @@
 package com.tierzero.stacksonstacks.pile;
 
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-
-import javax.annotation.Nullable;
 
 public class RelativeBlockPos {
     private enum EnumGrid {
@@ -28,24 +25,25 @@ public class RelativeBlockPos {
         private double bound(double num) {
             return num > 1 ? 1 : num < 0 ? 0 : num;
         }
-
-        public boolean isMax(double num) {
-            return (num * divisor) + (1d / divisor) == divisor;
-        }
-
-        public double next(double num) {
-            return num + (1 / divisor);
-        }
     }
-
-    private static final String NBT_TAG_POS_X = "posX";
-    private static final String NBT_TAG_POS_Y = "posY";
-    private static final String NBT_TAG_POS_Z = "posZ";
-    private static final String NBT_TAG_AXIS = "axis";
 
     private final EnumFacing.Axis axis;
     private EnumGrid gridX, gridY, gridZ;
     private final double x, y, z;
+
+    public static RelativeBlockPos[] positions = new RelativeBlockPos[64];
+
+    static {
+        for (int i = 0; i < positions.length; i++) {
+            positions[i] = new RelativeBlockPos(i);
+        }
+    }
+
+    public static RelativeBlockPos fromSlot(int slotIndex) {
+        if (positions[slotIndex] != null)
+            return positions[slotIndex];
+        return new RelativeBlockPos(slotIndex);
+    }
 
     public RelativeBlockPos(double x, double y, double z, EnumFacing.Axis axis) {
         this.axis = axis;
@@ -53,10 +51,9 @@ public class RelativeBlockPos {
         this.x = gridX.round(x);
         this.y = gridY.round(y);
         this.z = gridZ.round(z);
-        toSlotIndex();
     }
 
-    public RelativeBlockPos(int slotIndex) {
+    private RelativeBlockPos(int slotIndex) {
         this.axis = EnumFacing.Axis.X;
         findGrid();
         double xLayer = ((int) (slotIndex / gridZ.divisor)) % gridX.divisor / gridX.divisor;
@@ -64,7 +61,6 @@ public class RelativeBlockPos {
         this.y = ((int) (slotIndex / gridY.divisor)) % gridY.divisor / gridY.divisor;
         this.x = xLayer;
         this.z = zLayer;
-
     }
 
     public void findGrid() {
@@ -84,25 +80,6 @@ public class RelativeBlockPos {
                 this.gridY = null;
                 this.gridZ = null;
         }
-    }
-
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setDouble(NBT_TAG_POS_X, x);
-        tag.setDouble(NBT_TAG_POS_Y, y);
-        tag.setDouble(NBT_TAG_POS_Z, z);
-        if (axis != null) {
-            tag.setInteger(NBT_TAG_AXIS, axis.ordinal());
-        }
-        return null;
-    }
-
-    public static RelativeBlockPos getFromDeserializeNBT(NBTTagCompound tag) {
-        EnumFacing.Axis axis = EnumFacing.Axis.X;
-        if (tag.hasKey(NBT_TAG_AXIS)) {
-            axis = EnumFacing.Axis.values()[tag.getInteger(NBT_TAG_AXIS)];
-        }
-        return new RelativeBlockPos(tag.getDouble(NBT_TAG_POS_X), tag.getDouble(NBT_TAG_POS_Y), tag.getDouble(NBT_TAG_POS_Z), axis);
     }
 
     public boolean equals(RelativeBlockPos pos) {
@@ -126,30 +103,17 @@ public class RelativeBlockPos {
         return z;
     }
 
-    @Nullable
-    public RelativeBlockPos next() {
-        return new RelativeBlockPos(this.toSlotIndex() + 1);
-    }
-
     /**
      * Converts the position into a integer in the range (0, 64) representing the item slot
      *
      * @return
      */
     public int toSlotIndex() {
-        int xLayer = (int) (x * gridX.divisor);
-        int yLayer = (int) (y * gridY.divisor);
-        int zLayer = (int) (z * gridZ.divisor);
-
-        int slotIndex = zLayer;
-
-        if (xLayer > 0) {
-            slotIndex += gridZ.divisor;
+        for (int i = 0; i < positions.length; i++) {
+            if (positions[i].equals(this))
+                return i;
         }
-
-        slotIndex += yLayer * gridY.divisor;
-
-        return slotIndex;
+        return -1;
     }
 
 

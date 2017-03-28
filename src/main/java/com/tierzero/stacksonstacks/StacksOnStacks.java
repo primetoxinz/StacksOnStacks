@@ -1,6 +1,5 @@
 package com.tierzero.stacksonstacks;
 
-import com.tierzero.stacksonstacks.capability.Capabilities;
 import com.tierzero.stacksonstacks.containers.BlockContainer;
 import com.tierzero.stacksonstacks.containers.TileContainer;
 import com.tierzero.stacksonstacks.core.CommonProxy;
@@ -34,8 +33,6 @@ public class StacksOnStacks {
 
 		GameRegistry.register(CONTAINER);
 		GameRegistry.registerTileEntity(TileContainer.class,"sos.tile.container");
-
-		Capabilities.register();
 
 		LogHandler.initLogger(event.getModLog());
 		ConfigHandler.initConfig(event.getSuggestedConfigurationFile());

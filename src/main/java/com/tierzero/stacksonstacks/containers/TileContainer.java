@@ -1,6 +1,5 @@
 package com.tierzero.stacksonstacks.containers;
 
-import com.tierzero.stacksonstacks.capability.Capabilities;
 import com.tierzero.stacksonstacks.pile.IPileContainer;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
@@ -19,16 +18,14 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class TileContainer extends TileEntity implements IPileContainer {
     protected Pile pile;
@@ -39,7 +36,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        if (capability == Capabilities.CAPABILITY_PILE /*|| capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY*/)
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
             return true;
         return super.hasCapability(capability, facing);
     }
@@ -47,8 +44,8 @@ public class TileContainer extends TileEntity implements IPileContainer {
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == Capabilities.CAPABILITY_PILE)
-            return Capabilities.CAPABILITY_PILE.cast(pile);
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+            return (T) pile;
         return super.getCapability(capability, facing);
     }
 
@@ -64,24 +61,23 @@ public class TileContainer extends TileEntity implements IPileContainer {
     }
 
     public boolean place(World world, EntityPlayer player, ItemStack itemStack, RayTraceResult result, RelativeBlockPos relativeBlockPos) {
-        if(RegistrationHandler.isRegistered(itemStack)) {
-    		if(pile.addPileItem(world, player, result, this,relativeBlockPos.toSlotIndex(), itemStack)) {
-    			SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
+        if (RegistrationHandler.isRegistered(itemStack)) {
+            ItemStack ret = pile.insertItem(relativeBlockPos.toSlotIndex(), itemStack, false);
+            if (ret != itemStack) {
+                itemStack.setCount(ret.getCount());
+                SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
                 world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
                 return true;
-    		}
-    	}
-
+            }
+        }
         return false;
     }
 
     public void placeAll(World world, EntityPlayer player, RayTraceResult result, ItemStack stack) {
-        int i = 0;
-        RelativeBlockPos pos = RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(Vec3d.ZERO);
-        while (i < pile.getSlots() && stack.getCount() > 0) {
-            place(world, player, stack, result, pos);
-            pos = pos.next();
-            i++;
+        for(RelativeBlockPos pos: RelativeBlockPos.positions) {
+            place(world,player,stack,result,pos);
+            if(stack.isEmpty())
+                break;
         }
     }
 
@@ -131,12 +127,23 @@ public class TileContainer extends TileEntity implements IPileContainer {
     }
 
     public void dropItems(EntityPlayer player) {
-        if (pile == null)
-            return;
-        List<ItemStack> drops = pile.getItems().stream().map(pileItem -> pileItem.getItemStack()).collect(Collectors.toList());
-        for (ItemStack stack : drops) {
-            ItemHandlerHelper.giveItemToPlayer(player, stack);
+        if (!player.isCreative()) {
+            for (int i = 0; i < pile.getSlots(); i++) {
+                ItemHandlerHelper.giveItemToPlayer(player, pile.getStackInSlot(i));
+            }
         }
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound.merge(pile.serializeNBT());
+        return super.writeToNBT(compound);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        pile.deserializeNBT(compound);
+        super.readFromNBT(compound);
     }
 
     public Pile getPile() {
