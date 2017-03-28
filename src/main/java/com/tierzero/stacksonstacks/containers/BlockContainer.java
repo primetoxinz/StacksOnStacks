@@ -34,14 +34,11 @@ public class BlockContainer extends Block implements ITileEntityProvider {
     @Override
     public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
         TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
-        System.out.println("2");
         super.onBlockClicked(worldIn, pos, playerIn);
     }
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-
-
         return super.getBoundingBox(state, source, pos);
     }
 

@@ -42,5 +42,9 @@ public class PileItem implements INBTSerializable<NBTTagCompound> {
 		this.itemStack = new ItemStack(nbt.getCompoundTag(NBT_TAG_ITEM_STACK));
 		this.relativeBlockPos = RelativeBlockPos.getFromDeserializeNBT(nbt);
 	}
+
+	public int getIndex() {
+		return relativeBlockPos.toSlotIndex();
+	}
 	
 }

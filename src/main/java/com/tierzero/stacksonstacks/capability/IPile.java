@@ -2,23 +2,22 @@ package com.tierzero.stacksonstacks.capability;
 
 import com.tierzero.stacksonstacks.pile.IPileContainer;
 import com.tierzero.stacksonstacks.pile.PileItem;
-import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
 
-public interface IPile {
+public interface IPile extends IItemHandler  {
 
-	PileItem getPileItemAtRelativeBlockPos(RelativeBlockPos relativeBlockPos);
-	boolean addPileItem(World world, EntityPlayer player, RayTraceResult rayTraceResult, IPileContainer pileContainer, PileItem pileItem);
+	boolean addPileItem(World world, EntityPlayer player, RayTraceResult rayTraceResult, IPileContainer pileContainer, int slot, ItemStack stack);
 
 	List<PileItem> getItems();
 
 	int getStoredAmount();
-	int getMaxStoredAmount();
 
 	void deserializeNBT(NBTTagCompound tag);
 	NBTTagCompound serializeNBT();

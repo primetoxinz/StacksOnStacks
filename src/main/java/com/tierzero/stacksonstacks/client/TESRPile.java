@@ -42,11 +42,13 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
             bakedModel = model.bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM,
                     location -> Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString()));
         }
         return bakedModel;
     }
+
 
     @Override
     public void renderTileEntityAt(TileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
@@ -65,13 +67,16 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
             GlStateManager.shadeModel(GL11.GL_FLAT);
         }
 
+
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-        GlStateManager.translate(-te.getPos().getX(),-te.getPos().getY(),-te.getPos().getZ());
-        for(PileItem item: pile.getItems()) {
 
-            renderIngot(te,item);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+
+        GlStateManager.translate(-te.getPos().getX(), -te.getPos().getY(), -te.getPos().getZ());
+        for (PileItem item : pile.getItems()) {
+
+            renderIngot(te, item);
         }
         tessellator.draw();
         RenderHelper.enableStandardItemLighting();
@@ -87,8 +92,10 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         World world = te.getWorld();
 
         GlStateManager.pushMatrix();
-        buffer.setTranslation(pos.getX(),pos.getY(),pos.getZ());
-        
+
+//        GL11.glRotated(90,0,1,0);
+        buffer.setTranslation(pos.getX(), pos.getY(), pos.getZ());
+
         Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
                 world,
                 getBakedModel(),
@@ -96,9 +103,9 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
                 te.getPos(),
                 Tessellator.getInstance().getBuffer(),
                 true);
-
-        buffer.setTranslation(0,0,0);
+        buffer.setTranslation(0, 0, 0);
         GlStateManager.popMatrix();
 
     }
+
 }

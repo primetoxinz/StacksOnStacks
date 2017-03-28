@@ -55,20 +55,18 @@ public class RelativeBlockPos {
         this.z = gridZ.round(z);
         toSlotIndex();
     }
-    
+
     public RelativeBlockPos(int slotIndex) {
-    	this.axis = EnumFacing.Axis.X;
-    	findGrid();
-    	
-    	int xLayer = (int) (gridX.divisor % slotIndex);
-    	int yLayer = (int) (gridY.divisor % slotIndex);
-    	int zLayer = (int) (gridZ.divisor % slotIndex);
-    	
-    	this.x = xLayer / gridX.divisor;
-    	this.y = yLayer / gridY.divisor;
-    	this.z = zLayer / gridZ.divisor;  	
+        this.axis = EnumFacing.Axis.X;
+        findGrid();
+        double xLayer = ((int) (slotIndex / gridZ.divisor)) % gridX.divisor / gridX.divisor;
+        double zLayer = slotIndex % gridZ.divisor / gridZ.divisor;
+        this.y = ((int) (slotIndex / gridY.divisor)) % gridY.divisor / gridY.divisor;
+        this.x = xLayer;
+        this.z = zLayer;
+
     }
-    
+
     public void findGrid() {
         switch (axis) {
             case X:
@@ -130,52 +128,29 @@ public class RelativeBlockPos {
 
     @Nullable
     public RelativeBlockPos next() {
-        double x = this.x, y = this.y, z = this.z;
-        if(x==.5f) {
-            z+=.25f;
-            if(z > .75f) {
-                y+=.125f;
-                z=0;
-            }
-            x=0;
-        } else {
-            x+=.5f;
-        }
-//        if(gridX.isMax(x)) {
-//            z=gridZ.next(z);
-//            if(gridZ.isMax(z)) {
-//                y=gridY.next(y);
-//                z=0;
-//            }
-//            x=0;
-//        } else {
-//            x=gridX.next(x);
-//        }
-        return new RelativeBlockPos(x, y, z, axis);
+        return new RelativeBlockPos(this.toSlotIndex() + 1);
     }
-    
+
     /**
      * Converts the position into a integer in the range (0, 64) representing the item slot
+     *
      * @return
      */
     public int toSlotIndex() {
-    	int yLayer = (int)(y * gridY.divisor);
-    	int xLayer = (int)(x * gridX.divisor);
-    	int zLayer = (int)(z * gridZ.divisor);
-    	
-    	int slotIndex = zLayer;
-    	
-    	if(xLayer > 0) {
-    		slotIndex += gridZ.divisor;
-    	}
-    	
-    	slotIndex += yLayer * gridY.divisor;
-    	RelativeBlockPos test = new RelativeBlockPos(slotIndex);
-    	
-    	System.out.println(this.toString());
-    	System.out.println(test.toString());
-    	return slotIndex;
+        int xLayer = (int) (x * gridX.divisor);
+        int yLayer = (int) (y * gridY.divisor);
+        int zLayer = (int) (z * gridZ.divisor);
+
+        int slotIndex = zLayer;
+
+        if (xLayer > 0) {
+            slotIndex += gridZ.divisor;
+        }
+
+        slotIndex += yLayer * gridY.divisor;
+
+        return slotIndex;
     }
-   
-    
+
+
 }
