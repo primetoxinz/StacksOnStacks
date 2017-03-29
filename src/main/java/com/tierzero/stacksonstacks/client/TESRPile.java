@@ -24,81 +24,68 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-/**
- * Purpose:
- *
- * @author Tyler Marshall
- * @version 3/23/17
- */
 public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
-
-	@SideOnly(Side.CLIENT)
-    private static IngotRender ingotRender;
 
     @Override
     public void renderTileEntityAt(TileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
-    	if(ingotRender == null) {
-    		ingotRender = new IngotRender(null);
-    	}
-    	
+    	Pile pile = te.getPile();
+        Tessellator tessellator = Tessellator.getInstance();
+        VertexBuffer buffer = tessellator.getBuffer();
     	
         GlStateManager.pushMatrix();
 
         // Translate to the location of our tile entity
-        GlStateManager.translate(x, y, z);
-        Pile pile = te.getPile();
         
         RenderHelper.disableStandardItemLighting();
-        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         if (Minecraft.isAmbientOcclusionEnabled()) {
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
         } else {
             GlStateManager.shadeModel(GL11.GL_FLAT);
         }
 
-
-        Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer buffer = tessellator.getBuffer();
-
+        //TODO - Make this bind the texture on each individual ingot
+        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
+        GlStateManager.translate(x, y, z);
         GlStateManager.translate(-te.getPos().getX(), -te.getPos().getY(), -te.getPos().getZ());
+        
         for(int slot = 0; slot < pile.getSlots(); slot++) {
             ItemStack stack = pile.getStackInSlot(slot);
             if(!stack.isEmpty()) {
-                ingotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot));
+                IngotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot));
             }
         }
+        
         tessellator.draw();
         RenderHelper.enableStandardItemLighting();
         GlStateManager.popMatrix();
     }
 
     public static boolean renderWireframe(World world, EntityPlayer player, TileEntity tileEntity, Vec3d hitPos) {
-    	if(ingotRender == null) {
-    		ingotRender = new IngotRender(null);
-    	}
     	
     	Vec3d relativeHitPos = new Vec3d(hitPos.xCoord - Math.floor(hitPos.xCoord), hitPos.yCoord - Math.floor(hitPos.yCoord), hitPos.zCoord - Math.floor(hitPos.zCoord));
     	
     	RelativeBlockPos relativePos = new RelativeBlockPos(relativeHitPos.xCoord, relativeHitPos.yCoord, relativeHitPos.zCoord, EnumFacing.Axis.X);
-        RenderHelper.disableStandardItemLighting();
         
     	GlStateManager.pushMatrix();
+        RenderHelper.disableStandardItemLighting();
+
     	Tessellator tess = Tessellator.getInstance();
     	BlockPos playerPosition = player.getPosition();
     	Vec3d translation = new Vec3d(playerPosition.getX() - hitPos.xCoord, playerPosition.getY() - hitPos.yCoord, playerPosition.getZ() - hitPos.zCoord);
-        tess.getBuffer().begin(3, DefaultVertexFormats.BLOCK);
+        tess.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         GlStateManager.translate(-player.getPosition().getX(), -player.getPosition().getY(), -player.getPosition().getZ());
 
         GlStateManager.translate(-translation.xCoord, -translation.yCoord - 1, -translation.zCoord);
 
 
-        ingotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativePos);
+        IngotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativePos);
         tess.draw();
-    	GlStateManager.popMatrix();
     	RenderHelper.enableStandardItemLighting();
+
+    	GlStateManager.popMatrix();
     	return true;
     	
     }

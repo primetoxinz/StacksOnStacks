@@ -18,26 +18,24 @@ import net.minecraftforge.common.model.TRSRTransformation;
 
 public class IngotRender {
 
-	public static IModel model;
-	public static IBakedModel wireFrame;
-	
-	public IBakedModel bakedModel;
-	
-	public IngotRender(ResourceLocation textureLocation) {
-		if(model == null) {
-            try {
-				model = ModelLoaderRegistry.getModel(new ResourceLocation(LibCore.MOD_ID, "block/ingot.obj"));
-			} catch (Exception e) {
+	public static IModel model = loadModel();	
+	public static IBakedModel bakedModel = loadBakedModel();
+
+	private static IModel loadModel() {
+		try {
+			return ModelLoaderRegistry.getModel(new ResourceLocation(LibCore.MOD_ID, "block/ingot.obj"));
+		} catch (Exception e) {
 				LogHandler.logError("Could not load ingot model! Please report this to the mod author!");
-			}
 		}
-		
-		//TODO - Make this use the texture location to bind the correct texture to the model
-		bakedModel = model.bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK, 
+		return null;
+	}
+	
+	public static IBakedModel loadBakedModel() {
+		return model.bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK, 
                 location -> Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString()));
 	}
 	
-	public void renderIngotToBuffer(VertexBuffer buffer, World world, BlockPos renderPosition, RelativeBlockPos relativeRenderPos) {
+	public static void renderIngotToBuffer(VertexBuffer buffer, World world, BlockPos renderPosition, RelativeBlockPos relativeRenderPos) {
 
         GlStateManager.pushMatrix();
 	        buffer.setTranslation(relativeRenderPos.getX(), relativeRenderPos.getY(), relativeRenderPos.getZ());
