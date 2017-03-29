@@ -40,21 +40,18 @@ public class IngotRender {
     }
 
     public static void renderIngotToBuffer(VertexBuffer buffer, World world, BlockPos renderPosition, RelativeBlockPos relativeRenderPos, ItemStack stack) {
-
         GlStateManager.pushMatrix();
         buffer.setTranslation(relativeRenderPos.getX(), relativeRenderPos.getY(), relativeRenderPos.getZ());
-
         Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
                 world,
                 bakedModel,
                 world.getBlockState(renderPosition),
                 renderPosition,
                 buffer,
-                true);
+                false);
         buffer.setTranslation(0, 0, 0);
-
         for (int i = 0; i < 24; i++)
-            putColor(buffer, getAverageColor(stack), i + 1);
+            putColor(buffer,getAverageColor(stack), i + 1);
         GlStateManager.popMatrix();
 
     }

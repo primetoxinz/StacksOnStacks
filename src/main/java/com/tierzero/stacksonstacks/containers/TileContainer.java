@@ -78,7 +78,6 @@ public class TileContainer extends TileEntity implements IPileContainer {
         while (i < 64) {
             place(world, player, stack, result, RelativeBlockPos.fromSlot(i));
             i++;
-
         }
         return true;
     }

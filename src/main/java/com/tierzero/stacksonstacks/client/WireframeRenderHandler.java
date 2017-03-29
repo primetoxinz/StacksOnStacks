@@ -12,14 +12,11 @@ public class WireframeRenderHandler {
 	
 	@SubscribeEvent
 	public void drawBlockHighlightEvent(DrawBlockHighlightEvent event) {
-		if(true)
-			return;
 		World world = event.getPlayer().getEntityWorld();
 		BlockPos hitBlockPosition = event.getTarget().getBlockPos();
 		
 		if(event.getTarget().typeOfHit == RayTraceResult.Type.BLOCK) {
 			TileEntity tileAtHitPosition = world.getTileEntity(hitBlockPosition);
-			
 			if(tileAtHitPosition instanceof TileContainer) {
 				if(TESRPile.renderWireframe(world, event.getPlayer(), tileAtHitPosition, event.getTarget().hitVec)) {
 					event.setCanceled(true);

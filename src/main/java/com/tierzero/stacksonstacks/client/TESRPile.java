@@ -44,8 +44,7 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
-        GlStateManager.translate(x, y, z);
-        GlStateManager.translate(-te.getPos().getX(), -te.getPos().getY(), -te.getPos().getZ());
+        GlStateManager.translate(x-te.getPos().getX(), y-te.getPos().getY(), z-te.getPos().getZ());
         
         for(int slot = 0; slot < pile.getSlots(); slot++) {
             ItemStack stack = pile.getStackInSlot(slot);
@@ -53,7 +52,6 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
                 IngotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot),stack);
             }
         }
-        
         tessellator.draw();
         RenderHelper.enableStandardItemLighting();
         GlStateManager.popMatrix();
@@ -63,23 +61,16 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
     	ItemStack stack = player.getHeldItemMainhand();
     	if(!RegistrationHandler.isRegistered(stack))
     	    return false;
-    	Vec3d relativeHitPos = new Vec3d(hitPos.xCoord - Math.floor(hitPos.xCoord), hitPos.yCoord - Math.floor(hitPos.yCoord), hitPos.zCoord - Math.floor(hitPos.zCoord));
-    	
-    	RelativeBlockPos relativePos = new RelativeBlockPos(relativeHitPos.xCoord, relativeHitPos.yCoord, relativeHitPos.zCoord, EnumFacing.Axis.X);
-        
+    	RelativeBlockPos relativeBlockPos = new RelativeBlockPos(hitPos.xCoord - Math.floor(hitPos.xCoord), hitPos.yCoord - Math.floor(hitPos.yCoord), hitPos.zCoord - Math.floor(hitPos.zCoord), EnumFacing.Axis.X);
+
     	GlStateManager.pushMatrix();
 
     	Tessellator tess = Tessellator.getInstance();
     	BlockPos playerPosition = player.getPosition();
-    	Vec3d translation = new Vec3d(playerPosition.getX() - hitPos.xCoord, playerPosition.getY() - hitPos.yCoord, playerPosition.getZ() - hitPos.zCoord);
         tess.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-
         GlStateManager.translate(-player.getPosition().getX(), -player.getPosition().getY(), -player.getPosition().getZ());
-
-        GlStateManager.translate(-translation.xCoord, -translation.yCoord - 1, -translation.zCoord);
-
-
-        IngotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativePos,stack);
+        GlStateManager.translate(relativeBlockPos.getX(),0,relativeBlockPos.getZ());
+        IngotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativeBlockPos,stack);
         tess.draw();
     	GlStateManager.popMatrix();
     	return true;

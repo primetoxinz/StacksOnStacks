@@ -35,16 +35,6 @@ public class BlockContainer extends Block {
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        TileContainer tile = (TileContainer) source.getTileEntity(pos);
-        if(tile == null)
-            return super.getBoundingBox(state,source,pos);
-
-
-        int i = 0;
-        for(int j = 0; j < tile.pile.getSlots(); j++) {
-            if(!tile.pile.getStackInSlot(i).isEmpty())
-                i=j;
-        }
         return new AxisAlignedBB(0,0,0,1,1,1);
     }
 
