@@ -1,11 +1,9 @@
 package com.tierzero.stacksonstacks.client;
 
-import org.lwjgl.opengl.GL11;
-
 import com.tierzero.stacksonstacks.containers.TileContainer;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
-
+import com.tierzero.stacksonstacks.registration.RegistrationHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -21,8 +19,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
 
@@ -53,7 +50,7 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         for(int slot = 0; slot < pile.getSlots(); slot++) {
             ItemStack stack = pile.getStackInSlot(slot);
             if(!stack.isEmpty()) {
-                IngotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot));
+                IngotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot),stack);
             }
         }
         
@@ -63,13 +60,14 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
     }
 
     public static boolean renderWireframe(World world, EntityPlayer player, TileEntity tileEntity, Vec3d hitPos) {
-    	
+    	ItemStack stack = player.getHeldItemMainhand();
+    	if(!RegistrationHandler.isRegistered(stack))
+    	    return false;
     	Vec3d relativeHitPos = new Vec3d(hitPos.xCoord - Math.floor(hitPos.xCoord), hitPos.yCoord - Math.floor(hitPos.yCoord), hitPos.zCoord - Math.floor(hitPos.zCoord));
     	
     	RelativeBlockPos relativePos = new RelativeBlockPos(relativeHitPos.xCoord, relativeHitPos.yCoord, relativeHitPos.zCoord, EnumFacing.Axis.X);
         
     	GlStateManager.pushMatrix();
-        RenderHelper.disableStandardItemLighting();
 
     	Tessellator tess = Tessellator.getInstance();
     	BlockPos playerPosition = player.getPosition();
@@ -81,10 +79,8 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         GlStateManager.translate(-translation.xCoord, -translation.yCoord - 1, -translation.zCoord);
 
 
-        IngotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativePos);
+        IngotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativePos,stack);
         tess.draw();
-    	RenderHelper.enableStandardItemLighting();
-
     	GlStateManager.popMatrix();
     	return true;
     	

@@ -1,7 +1,5 @@
 package com.tierzero.stacksonstacks.registration;
 
-import com.tierzero.stacksonstacks.core.LogHandler;
-import com.tierzero.stacksonstacks.util.OreDictUtil;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ public class RegistrationHandler {
 	}
 	
 	public static boolean isRegistered(ItemStack itemStack) {
-		return registries.stream().anyMatch(registry -> registry.isRegistered(itemStack));
+		return !itemStack.isEmpty() && registries.stream().anyMatch(registry -> registry.isRegistered(itemStack));
 	}
 	
 	public static boolean isRegisteredForType(ItemStack itemStack, EnumRegisteredItemType type) {

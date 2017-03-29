@@ -40,9 +40,9 @@ public class RelativeBlockPos {
     }
 
     public static RelativeBlockPos fromSlot(int slotIndex) {
-        if (positions[slotIndex] != null)
-            return positions[slotIndex];
-        return new RelativeBlockPos(slotIndex);
+        if (positions[slotIndex%positions.length] != null)
+            return positions[slotIndex%positions.length];
+        return new RelativeBlockPos(slotIndex%positions.length);
     }
 
     public RelativeBlockPos(double x, double y, double z, EnumFacing.Axis axis) {

@@ -55,7 +55,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
     }
 
     @Override
-    public boolean onPlayerLeftClick(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
+    public boolean onPlayerLeftClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
         // TODO Auto-generated method stub
         return false;
     }
@@ -64,6 +64,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
         if (RegistrationHandler.isRegistered(itemStack)) {
             ItemStack ret = pile.insertItem(relativeBlockPos.toSlotIndex(), itemStack, false);
             if (ret != itemStack) {
+                itemStack.shrink(1);
                 SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
                 world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
                 return true;
@@ -72,37 +73,31 @@ public class TileContainer extends TileEntity implements IPileContainer {
         return false;
     }
 
-    public void placeAll(World world, EntityPlayer player, RayTraceResult result, ItemStack stack) {
+    public boolean placeAll(World world, EntityPlayer player, RayTraceResult result, ItemStack stack) {
         int i = 0;
-        while (i < 64 && stack.getCount() > 0) {
+        while (i < 64) {
             place(world, player, stack, result, RelativeBlockPos.fromSlot(i));
             i++;
+
         }
+        return true;
     }
 
     @Override
-    public boolean onPlayerRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
-        if (player.getActiveItemStack() != null) {
-            ItemStack stack = player.getHeldItemMainhand();
-            return place(world, player, stack, rayTraceResult, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
-        }
+    public boolean onPlayerRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
+        return place(world, player, stack, rayTraceResult, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
+    }
+
+    @Override
+    public boolean onPlayerShiftLeftClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
+
+
         return false;
     }
 
     @Override
-    public boolean onPlayerShiftLeftClick(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
-
-
-        return false;
-    }
-
-    @Override
-    public boolean onPlayerShiftRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
-        if (player.getActiveItemStack() != null) {
-            ItemStack stack = player.getHeldItemMainhand();
-            placeAll(world, player, rayTraceResult, stack);
-        }
-        return false;
+    public boolean onPlayerShiftRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
+        return placeAll(world, player, rayTraceResult, stack);
     }
 
     @Override
@@ -128,7 +123,8 @@ public class TileContainer extends TileEntity implements IPileContainer {
     public void dropItems(EntityPlayer player) {
         if (!player.isCreative()) {
             for (int i = 0; i < pile.getSlots(); i++) {
-                ItemHandlerHelper.giveItemToPlayer(player, pile.getStackInSlot(i));
+                if(!pile.getStackInSlot(i).isEmpty())
+                    ItemHandlerHelper.giveItemToPlayer(player, pile.getStackInSlot(i));
             }
         }
     }

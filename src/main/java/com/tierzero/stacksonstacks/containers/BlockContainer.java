@@ -1,7 +1,6 @@
 package com.tierzero.stacksonstacks.containers;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -20,17 +19,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockContainer extends Block implements ITileEntityProvider {
+import javax.annotation.Nullable;
+
+public class BlockContainer extends Block {
 
     public BlockContainer() {
         super(Material.IRON);
     }
-
-    @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileContainer();
-    }
-
 
     @Override
     public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
@@ -40,7 +35,24 @@ public class BlockContainer extends Block implements ITileEntityProvider {
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return super.getBoundingBox(state, source, pos);
+        TileContainer tile = (TileContainer) source.getTileEntity(pos);
+        if(tile == null)
+            return super.getBoundingBox(state,source,pos);
+
+
+        int i = 0;
+        for(int j = 0; j < tile.pile.getSlots(); j++) {
+            if(!tile.pile.getStackInSlot(i).isEmpty())
+                i=j;
+        }
+        return new AxisAlignedBB(0,0,0,1,1,1);
+    }
+
+    @Nullable
+    @Override
+    protected RayTraceResult rayTrace(BlockPos pos, Vec3d start, Vec3d end, AxisAlignedBB boundingBox) {
+
+        return super.rayTrace(pos, start, end, boundingBox);
     }
 
     @Override
@@ -48,9 +60,9 @@ public class BlockContainer extends Block implements ITileEntityProvider {
         TileContainer tile = (TileContainer) worldIn.getTileEntity(pos);
         RayTraceResult result = new RayTraceResult(new Vec3d(hitX, hitY, hitZ), side, pos);
         if (playerIn.isSneaking()) {
-            return tile.onPlayerShiftRightClick(worldIn, playerIn, result);
+            return tile.onPlayerShiftRightClick(worldIn, playerIn, result, playerIn.getHeldItem(hand));
         } else {
-            return tile.onPlayerRightClick(worldIn, playerIn, result);
+            return tile.onPlayerRightClick(worldIn, playerIn, result, playerIn.getHeldItem(hand));
         }
     }
 
@@ -90,8 +102,21 @@ public class BlockContainer extends Block implements ITileEntityProvider {
 
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+
         TileContainer tile = (TileContainer) world.getTileEntity(pos);
-        tile.dropItems(player);
+        if(player.isCreative())
+            tile.dropItems(player);
         return super.getPickBlock(state, target, world, pos, player);
+    }
+
+    @Override
+    public boolean hasTileEntity(IBlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(World world, IBlockState state) {
+        return new TileContainer();
     }
 }
