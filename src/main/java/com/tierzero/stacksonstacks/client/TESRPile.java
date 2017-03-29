@@ -1,25 +1,28 @@
 package com.tierzero.stacksonstacks.client;
 
+import org.lwjgl.opengl.GL11;
+
 import com.tierzero.stacksonstacks.containers.TileContainer;
-import com.tierzero.stacksonstacks.lib.LibCore;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
-import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.common.model.TRSRTransformation;
-import org.lwjgl.opengl.GL11;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Purpose:
@@ -29,36 +32,22 @@ import org.lwjgl.opengl.GL11;
  */
 public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
 
-
-    private IModel model;
-    private IBakedModel bakedModel;
-
-    private IBakedModel getBakedModel() {
-        // Since we cannot bake in preInit() we do lazy baking of the model as soon as we need it
-        // for rendering
-        if (bakedModel == null) {
-            try {
-                model = ModelLoaderRegistry.getModel(new ResourceLocation(LibCore.MOD_ID, "block/ingot.obj"));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            bakedModel = model.bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM,
-                    location -> Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString()));
-        }
-        return bakedModel;
-    }
-
+	@SideOnly(Side.CLIENT)
+    private static IngotRender ingotRender;
 
     @Override
     public void renderTileEntityAt(TileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
+    	if(ingotRender == null) {
+    		ingotRender = new IngotRender(null);
+    	}
+    	
+    	
         GlStateManager.pushMatrix();
 
         // Translate to the location of our tile entity
         GlStateManager.translate(x, y, z);
         Pile pile = te.getPile();
-
-
+        
         RenderHelper.disableStandardItemLighting();
         this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         if (Minecraft.isAmbientOcclusionEnabled()) {
@@ -74,10 +63,10 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         GlStateManager.translate(-te.getPos().getX(), -te.getPos().getY(), -te.getPos().getZ());
-        for(int slot = 0; slot < pile.getSlots();slot++) {
+        for(int slot = 0; slot < pile.getSlots(); slot++) {
             ItemStack stack = pile.getStackInSlot(slot);
             if(!stack.isEmpty()) {
-                renderIngot(te,slot,stack);
+                ingotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot));
             }
         }
         tessellator.draw();
@@ -85,29 +74,33 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
         GlStateManager.popMatrix();
     }
 
+    public static boolean renderWireframe(World world, EntityPlayer player, TileEntity tileEntity, Vec3d hitPos) {
+    	if(ingotRender == null) {
+    		ingotRender = new IngotRender(null);
+    	}
+    	
+    	Vec3d relativeHitPos = new Vec3d(hitPos.xCoord - Math.floor(hitPos.xCoord), hitPos.yCoord - Math.floor(hitPos.yCoord), hitPos.zCoord - Math.floor(hitPos.zCoord));
+    	
+    	RelativeBlockPos relativePos = new RelativeBlockPos(relativeHitPos.xCoord, relativeHitPos.yCoord, relativeHitPos.zCoord, EnumFacing.Axis.X);
+        RenderHelper.disableStandardItemLighting();
+        
+    	GlStateManager.pushMatrix();
+    	Tessellator tess = Tessellator.getInstance();
+    	BlockPos playerPosition = player.getPosition();
+    	Vec3d translation = new Vec3d(playerPosition.getX() - hitPos.xCoord, playerPosition.getY() - hitPos.yCoord, playerPosition.getZ() - hitPos.zCoord);
+        tess.getBuffer().begin(3, DefaultVertexFormats.BLOCK);
 
-    public void renderIngot(TileContainer te, int slot, ItemStack item) {
-        Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer buffer = tessellator.getBuffer();
+        GlStateManager.translate(-player.getPosition().getX(), -player.getPosition().getY(), -player.getPosition().getZ());
 
-        RelativeBlockPos pos = RelativeBlockPos.fromSlot(slot);
-        World world = te.getWorld();
+        GlStateManager.translate(-translation.xCoord, -translation.yCoord - 1, -translation.zCoord);
 
-        GlStateManager.pushMatrix();
 
-//        GL11.glRotated(90,0,1,0);
-        buffer.setTranslation(pos.getX(), pos.getY(), pos.getZ());
-
-        Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
-                world,
-                getBakedModel(),
-                world.getBlockState(te.getPos()),
-                te.getPos(),
-                Tessellator.getInstance().getBuffer(),
-                true);
-        buffer.setTranslation(0, 0, 0);
-        GlStateManager.popMatrix();
-
+        ingotRender.renderIngotToBuffer(tess.getBuffer(), tileEntity.getWorld(), tileEntity.getPos(), relativePos);
+        tess.draw();
+    	GlStateManager.popMatrix();
+    	RenderHelper.enableStandardItemLighting();
+    	return true;
+    	
     }
-
+    
 }

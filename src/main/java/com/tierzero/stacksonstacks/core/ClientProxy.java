@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class ClientProxy extends CommonProxy {
     @Override
     public void preInit(FMLPreInitializationEvent e) {
-        ClientRegistry.bindTileEntitySpecialRenderer(TileContainer.class,new TESRPile());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileContainer.class, new TESRPile());
         OBJLoader.INSTANCE.addDomain(LibCore.MOD_ID);
     }
 }

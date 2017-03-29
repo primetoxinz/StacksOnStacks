@@ -1,5 +1,6 @@
 package com.tierzero.stacksonstacks;
 
+import com.tierzero.stacksonstacks.client.WireframeRenderHandler;
 import com.tierzero.stacksonstacks.containers.BlockContainer;
 import com.tierzero.stacksonstacks.containers.TileContainer;
 import com.tierzero.stacksonstacks.core.CommonProxy;
@@ -31,14 +32,17 @@ public class StacksOnStacks {
 	@Mod.EventHandler
 	public static void preInit(FMLPreInitializationEvent event) {
 
+		LogHandler.initLogger(event.getModLog());
+		ConfigHandler.initConfig(event.getSuggestedConfigurationFile());
+		
+		proxy.preInit(event);
+
 		GameRegistry.register(CONTAINER);
 		GameRegistry.registerTileEntity(TileContainer.class,"sos.tile.container");
 
-		LogHandler.initLogger(event.getModLog());
-		ConfigHandler.initConfig(event.getSuggestedConfigurationFile());
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
+		MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());
 
-		proxy.preInit(event);
 	}
 	
 	@Mod.EventHandler
