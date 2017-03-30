@@ -1,6 +1,11 @@
 package com.tierzero.stacksonstacks.pile;
 
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 public class RelativeBlockPos {
     private enum EnumGrid {
@@ -44,7 +49,9 @@ public class RelativeBlockPos {
             return positions[slotIndex%positions.length];
         return new RelativeBlockPos(slotIndex%positions.length);
     }
-
+    public RelativeBlockPos(RayTraceResult hit) {
+        this(hit.hitVec.xCoord,hit.hitVec.yCoord,hit.hitVec.zCoord, EnumFacing.Axis.X);
+    }
     public RelativeBlockPos(double x, double y, double z, EnumFacing.Axis axis) {
         this.axis = axis;
         findGrid();
@@ -116,5 +123,19 @@ public class RelativeBlockPos {
         return -1;
     }
 
+
+    public RayTraceResult getSlotCollision(World world, BlockPos pos, Vec3d start, Vec3d end) {
+        Vec3d vec3d = start.subtract((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+        Vec3d vec3d1 = end.subtract((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+        RayTraceResult raytraceresult = getSlotBounds().calculateIntercept(vec3d, vec3d1);
+        return raytraceresult == null ? null : new RayTraceResult(raytraceresult.hitVec.addVector((double)pos.getX(), (double)pos.getY(), (double)pos.getZ()), raytraceresult.sideHit, pos);
+    }
+
+
+    public AxisAlignedBB getSlotBounds() {
+        RelativeBlockPos pos = RelativeBlockPos.fromSlot(toSlotIndex());
+        double x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return new AxisAlignedBB(x, y, z, x + 0.5, y + 0.125, z + 0.25);
+    }
 
 }

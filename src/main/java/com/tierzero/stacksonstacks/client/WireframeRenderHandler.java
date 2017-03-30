@@ -19,7 +19,7 @@ public class WireframeRenderHandler {
 			TileEntity tileAtHitPosition = world.getTileEntity(hitBlockPosition);
 			if(tileAtHitPosition instanceof TileContainer) {
 				if(TESRPile.renderWireframe(world, event.getPlayer(), tileAtHitPosition, event.getTarget().hitVec)) {
-					event.setCanceled(true);
+//					event.setCanceled(true);
 				}
 			}
 		}

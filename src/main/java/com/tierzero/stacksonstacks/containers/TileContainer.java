@@ -31,7 +31,7 @@ public class TileContainer extends TileEntity implements IPileContainer {
     protected Pile pile;
 
     public TileContainer() {
-        this.pile = new Pile(EnumRegisteredItemType.INGOT);
+        this.pile = new Pile(EnumRegisteredItemType.INGOT, this);
     }
 
     @Override
@@ -55,8 +55,21 @@ public class TileContainer extends TileEntity implements IPileContainer {
     }
 
     @Override
-    public boolean onPlayerLeftClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
-        // TODO Auto-generated method stub
+    public boolean onPlayerLeftClick(World world, EntityPlayer player, RayTraceResult rayTrace, ItemStack stack) {
+
+        if (rayTrace != null) {
+            if (!world.isRemote) {
+                RelativeBlockPos relativeBlockPos = new RelativeBlockPos(rayTrace);
+                int slot = relativeBlockPos.toSlotIndex();
+                ItemStack extracted = pile.extractItem(slot, 1, false);
+                System.out.println(extracted + "," + slot);
+                System.out.println(pile);
+                if(!extracted.isEmpty()) {
+                    ItemHandlerHelper.giveItemToPlayer(player,extracted);
+                    return pile.isEmpty() ? breakBlock(world,player,rayTrace) : true;
+                }
+            }
+        }
         return false;
     }
 
@@ -89,11 +102,14 @@ public class TileContainer extends TileEntity implements IPileContainer {
 
     @Override
     public boolean onPlayerShiftLeftClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
-
-
-        return false;
+        return breakBlock(world, player, rayTraceResult);
     }
 
+    public boolean breakBlock(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
+        IBlockState state =  world.getBlockState(rayTraceResult.getBlockPos());
+        state.getBlock().onBlockHarvested(world, pos, state, player);
+        return world.setBlockState(pos, net.minecraft.init.Blocks.AIR.getDefaultState(), world.isRemote ? 11 : 3);
+    }
     @Override
     public boolean onPlayerShiftRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
         return placeAll(world, player, rayTraceResult, stack);
@@ -105,24 +121,12 @@ public class TileContainer extends TileEntity implements IPileContainer {
         return new SPacketUpdateTileEntity(this.getPos(), getBlockMetadata(), tag);
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void onDataPacket(NetworkManager mgr, SPacketUpdateTileEntity pkt) {
-        NBTTagCompound tag = pkt.getNbtCompound();
-        readFromNBT(tag);
-        IBlockState state = getWorld().getBlockState(this.pos);
-        getWorld().notifyBlockUpdate(this.pos, state, state, 3);
-    }
 
-    @Override
-    public NBTTagCompound getUpdateTag() {
-        return writeToNBT(new NBTTagCompound());
-    }
 
     public void dropItems(EntityPlayer player) {
         if (!player.isCreative()) {
             for (int i = 0; i < pile.getSlots(); i++) {
-                if(!pile.getStackInSlot(i).isEmpty())
+                if (!pile.getStackInSlot(i).isEmpty())
                     ItemHandlerHelper.giveItemToPlayer(player, pile.getStackInSlot(i));
             }
         }
@@ -140,7 +144,29 @@ public class TileContainer extends TileEntity implements IPileContainer {
         super.readFromNBT(compound);
     }
 
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void onDataPacket(NetworkManager mgr, SPacketUpdateTileEntity pkt) {
+        NBTTagCompound tag = pkt.getNbtCompound();
+        readFromNBT(tag);
+        IBlockState state = getWorld().getBlockState(this.pos);
+        getWorld().notifyBlockUpdate(this.pos, state, state, 3);
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return writeToNBT(new NBTTagCompound());
+    }
+
     public Pile getPile() {
         return pile;
+    }
+
+    @Override
+    public void markDirty() {
+        super.markDirty();
+        world.scheduleUpdate(pos,getBlockType(),0);
+        world.markBlockRangeForRenderUpdate(pos,pos);
+        world.scheduleBlockUpdate(pos,getBlockType(),0,1);
     }
 }
