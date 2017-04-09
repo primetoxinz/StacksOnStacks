@@ -1,8 +1,8 @@
 package com.tierzero.stacksonstacks;
 
 import com.tierzero.stacksonstacks.client.WireframeRenderHandler;
-import com.tierzero.stacksonstacks.containers.BlockContainer;
-import com.tierzero.stacksonstacks.containers.TileContainer;
+import com.tierzero.stacksonstacks.containers.BlockPileContainer;
+import com.tierzero.stacksonstacks.containers.TilePileContainer;
 import com.tierzero.stacksonstacks.core.CommonProxy;
 import com.tierzero.stacksonstacks.core.ConfigHandler;
 import com.tierzero.stacksonstacks.core.LogHandler;
@@ -27,7 +27,7 @@ public class StacksOnStacks {
 	@SidedProxy(clientSide = LibCore.PROXY_CLIENT, serverSide = LibCore.PROXY_COMMON)
 	public static CommonProxy proxy;
 
-	public static final Block CONTAINER = new BlockContainer().setRegistryName("sos.container");
+	public static final Block CONTAINER = new BlockPileContainer().setRegistryName("sos.container");
 
 	@Mod.EventHandler
 	public static void preInit(FMLPreInitializationEvent event) {
@@ -38,7 +38,7 @@ public class StacksOnStacks {
 		proxy.preInit(event);
 
 		GameRegistry.register(CONTAINER);
-		GameRegistry.registerTileEntity(TileContainer.class,"sos.tile.container");
+		GameRegistry.registerTileEntity(TilePileContainer.class,"sos.tile.container");
 
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
 		MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());

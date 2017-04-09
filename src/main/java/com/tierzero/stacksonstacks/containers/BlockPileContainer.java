@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -24,30 +25,34 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class BlockContainer extends Block {
+public class BlockPileContainer extends Block {
 
-    public BlockContainer() {
+    public BlockPileContainer() {
         super(Material.IRON);
     }
 
 
-    public static Optional<TileContainer> getTile(IBlockAccess world, BlockPos pos) {
+    public static Optional<TilePileContainer> getTile(IBlockAccess world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
-        return te != null && te instanceof TileContainer ? Optional.of((TileContainer) te) : Optional.empty();
+        return te != null && te instanceof TilePileContainer ? Optional.of((TilePileContainer) te) : Optional.empty();
     }
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return new AxisAlignedBB(0, 0, 0, 1, 1, 1);
+        return super.getBoundingBox(state, source, pos);
     }
 
+    @Override
+    public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean p_185477_7_) {
+    }
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        Optional<TileContainer> te = getTile(worldIn, pos);
+        Optional<TilePileContainer> te = getTile(worldIn, pos);
         if (te.isPresent()) {
             RayTraceResult result = new RayTraceResult(new Vec3d(hitX, hitY, hitZ), side, pos);
             if (playerIn.isSneaking()) {
@@ -61,7 +66,7 @@ public class BlockContainer extends Block {
 
     @Override
     public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
-        Optional<TileContainer> te = getTile(worldIn, pos);
+        Optional<TilePileContainer> te = getTile(worldIn, pos);
         te.ifPresent(t -> t.dropItems(player));
         super.onBlockHarvested(worldIn, pos, state, player);
     }
@@ -70,7 +75,7 @@ public class BlockContainer extends Block {
     public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
         Pair<Vec3d, Vec3d> vectors = RelativeBlockPosUtils.getRayTraceVectors(player);
         RayTraceResult hit = collisionRayTrace(state, world, pos, vectors.getLeft(), vectors.getRight());
-        Optional<TileContainer> tile = getTile(world, pos);
+        Optional<TilePileContainer> tile = getTile(world, pos);
         if(tile.isPresent()) {
             if(player.isSneaking()) {
                 return tile.get().onPlayerShiftLeftClick(world,player,hit, null);
@@ -83,7 +88,7 @@ public class BlockContainer extends Block {
 
     @Override
     public RayTraceResult collisionRayTrace(IBlockState state, World world, BlockPos pos, Vec3d start, Vec3d end) {
-        Optional<TileContainer> te = getTile(world, pos);
+        Optional<TilePileContainer> te = getTile(world, pos);
         return te.map(t -> IntStream.range(0, t.getPile().getSlots())).get()//
                 .mapToObj(i -> Pair.of(i, RelativeBlockPos.fromSlot(i).getSlotCollision(world, pos, start, end)))//
                 .filter(p -> p.getValue() != null)//
@@ -91,18 +96,14 @@ public class BlockContainer extends Block {
                 .map(p -> {//
                     RayTraceResult hit = new RayTraceResult(p.getValue().hitVec, p.getValue().sideHit, p.getValue().getBlockPos());//
                     hit.hitInfo = p.getValue();//
-                    hit.subHit = new RelativeBlockPos(hit).toSlotIndex();//
-//                    System.out.println(hit.subHit);
+                    hit.subHit = new RelativeBlockPos(hit).getSlot();//
                     return hit;//
                 }).orElse(null);//
     }
 
 
     @Override
-    public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack stack) {
-
-
-    }
+    public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack stack) {}
 
     @Override
     public SoundType getSoundType() {
@@ -133,8 +134,7 @@ public class BlockContainer extends Block {
 
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-
-        TileContainer tile = (TileContainer) world.getTileEntity(pos);
+        TilePileContainer tile = (TilePileContainer) world.getTileEntity(pos);
         if (player.isCreative())
             tile.dropItems(player);
         return super.getPickBlock(state, target, world, pos, player);
@@ -148,6 +148,6 @@ public class BlockContainer extends Block {
     @Nullable
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
-        return new TileContainer();
+        return new TilePileContainer();
     }
 }

@@ -1,6 +1,6 @@
 package com.tierzero.stacksonstacks.client;
 
-import com.tierzero.stacksonstacks.containers.TileContainer;
+import com.tierzero.stacksonstacks.containers.TilePileContainer;
 import com.tierzero.stacksonstacks.pile.Pile;
 import com.tierzero.stacksonstacks.pile.RelativeBlockPos;
 import com.tierzero.stacksonstacks.registration.RegistrationHandler;
@@ -16,15 +16,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
 
-public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
+public class TESRPile extends TileEntitySpecialRenderer<TilePileContainer> {
 
     @Override
-    public void renderTileEntityAt(TileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void renderTileEntityAt(TilePileContainer te, double x, double y, double z, float partialTicks, int destroyStage) {
     	Pile pile = te.getPile();
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer buffer = tessellator.getBuffer();
@@ -66,7 +65,6 @@ public class TESRPile extends TileEntitySpecialRenderer<TileContainer> {
     	GlStateManager.pushMatrix();
 
     	Tessellator tess = Tessellator.getInstance();
-    	BlockPos playerPosition = player.getPosition();
         tess.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
         GlStateManager.translate(-player.getPosition().getX(), -player.getPosition().getY(), -player.getPosition().getZ());
         GlStateManager.translate(relativeBlockPos.getX(),0,relativeBlockPos.getZ());

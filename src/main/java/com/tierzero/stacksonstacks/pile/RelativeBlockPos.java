@@ -35,6 +35,8 @@ public class RelativeBlockPos {
     private final EnumFacing.Axis axis;
     private EnumGrid gridX, gridY, gridZ;
     private final double x, y, z;
+    private int slot = -1;
+    public final static RelativeBlockPos INVALID = new RelativeBlockPos(-1);
 
     public static RelativeBlockPos[] positions = new RelativeBlockPos[64];
 
@@ -45,9 +47,11 @@ public class RelativeBlockPos {
     }
 
     public static RelativeBlockPos fromSlot(int slotIndex) {
-        if (positions[slotIndex%positions.length] != null)
-            return positions[slotIndex%positions.length];
-        return new RelativeBlockPos(slotIndex%positions.length);
+        if(slotIndex >= 64)
+            return INVALID;
+        else if (positions[slotIndex] != null)
+            return positions[slotIndex];
+        return new RelativeBlockPos(slotIndex);
     }
     public RelativeBlockPos(RayTraceResult hit) {
         this(hit.hitVec.xCoord,hit.hitVec.yCoord,hit.hitVec.zCoord, EnumFacing.Axis.X);
@@ -58,6 +62,11 @@ public class RelativeBlockPos {
         this.x = gridX.round(x);
         this.y = gridY.round(y);
         this.z = gridZ.round(z);
+        this.slot = toSlotIndex();
+    }
+
+    public boolean isValid() {
+        return this.toSlotIndex() > -1;
     }
 
     private RelativeBlockPos(int slotIndex) {
@@ -68,6 +77,7 @@ public class RelativeBlockPos {
         this.y = ((int) (slotIndex / gridY.divisor)) % gridY.divisor / gridY.divisor;
         this.x = xLayer;
         this.z = zLayer;
+        this.slot = slotIndex;
     }
 
     public void findGrid() {
@@ -113,16 +123,21 @@ public class RelativeBlockPos {
     /**
      * Converts the position into a integer in the range (0, 64) representing the item slot
      *
-     * @return
+     * @return slot
      */
-    public int toSlotIndex() {
-        for (int i = 0; i < positions.length; i++) {
-            if (positions[i].equals(this))
-                return i;
+    private int toSlotIndex() {
+        if(slot == -1) {
+            for (int i = 0; i < positions.length; i++) {
+                if (positions[i].equals(this))
+                    this.slot = i;
+            }
         }
-        return -1;
+        return this.slot;
     }
 
+    public int getSlot() {
+        return toSlotIndex();
+    }
 
     public RayTraceResult getSlotCollision(World world, BlockPos pos, Vec3d start, Vec3d end) {
         Vec3d vec3d = start.subtract((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
@@ -133,8 +148,7 @@ public class RelativeBlockPos {
 
 
     public AxisAlignedBB getSlotBounds() {
-        RelativeBlockPos pos = RelativeBlockPos.fromSlot(toSlotIndex());
-        double x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        double x = this.getX(), y = this.getY(), z = this.getZ();
         return new AxisAlignedBB(x, y, z, x + 0.5, y + 0.125, z + 0.25);
     }
 

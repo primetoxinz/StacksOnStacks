@@ -5,15 +5,15 @@ import net.minecraft.nbt.NBTTagCompound;
 public enum EnumRegisteredItemType {
 	
 	//TODO - Max stack sizes based on config?
-	UNKNOWN("unknown", 64),
-	INGOT("ingot", 64);
+	UNKNOWN("unknown", 1),
+	INGOT("ingot", 1);
 	
 	private static final String NBT_TAG_NAME = "name";
 	
 	private String name;
 	private int maxStackSize;
 	
-	private EnumRegisteredItemType(String name, int maxStackSize) {
+	EnumRegisteredItemType(String name, int maxStackSize) {
 		this.name = name;
 		this.maxStackSize = maxStackSize;
 	}

@@ -27,10 +27,10 @@ import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
-public class TileContainer extends TileEntity implements IPileContainer {
+public class TilePileContainer extends TileEntity implements IPileContainer {
     protected Pile pile;
 
-    public TileContainer() {
+    public TilePileContainer() {
         this.pile = new Pile(EnumRegisteredItemType.INGOT, this);
     }
 
@@ -54,50 +54,63 @@ public class TileContainer extends TileEntity implements IPileContainer {
         return null;
     }
 
-    @Override
-    public boolean onPlayerLeftClick(World world, EntityPlayer player, RayTraceResult rayTrace, ItemStack stack) {
 
+    public boolean removeSlot(World world, EntityPlayer player, RayTraceResult rayTrace) {
         if (rayTrace != null) {
             if (!world.isRemote) {
                 RelativeBlockPos relativeBlockPos = new RelativeBlockPos(rayTrace);
-                int slot = relativeBlockPos.toSlotIndex();
+                int slot = relativeBlockPos.getSlot();
                 ItemStack extracted = pile.extractItem(slot, 1, false);
-                System.out.println(extracted + "," + slot);
-                System.out.println(pile);
-                if(!extracted.isEmpty()) {
+                if(!extracted.isEmpty())
                     ItemHandlerHelper.giveItemToPlayer(player,extracted);
-                    return pile.isEmpty() ? breakBlock(world,player,rayTrace) : true;
-                }
+                return pile.isEmpty();
             }
         }
         return false;
     }
+    public boolean breakBlock(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
+        IBlockState state =  world.getBlockState(rayTraceResult.getBlockPos());
+        state.getBlock().onBlockHarvested(world, pos, state, player);
+        return world.setBlockState(pos, net.minecraft.init.Blocks.AIR.getDefaultState(), world.isRemote ? 11 : 3);
+    }
+
+    public void dropItems(EntityPlayer player) {
+        if (!player.isCreative()) {
+            for (int i = 0; i < pile.getSlots(); i++) {
+                if (!pile.getStackInSlot(i).isEmpty())
+                    ItemHandlerHelper.giveItemToPlayer(player, pile.getStackInSlot(i));
+            }
+        }
+    }
 
     public boolean place(World world, EntityPlayer player, ItemStack itemStack, RayTraceResult result, RelativeBlockPos relativeBlockPos) {
-        if (RegistrationHandler.isRegistered(itemStack)) {
-            ItemStack ret = pile.insertItem(relativeBlockPos.toSlotIndex(), itemStack, false);
-            if (ret != itemStack) {
-                itemStack.shrink(1);
-                SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
-                world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                return true;
-            }
+        if (relativeBlockPos.isValid() && RegistrationHandler.isRegistered(itemStack)) {
+            if(itemStack.isEmpty())
+                return false;
+            pile.insertItem(relativeBlockPos.getSlot(), itemStack.copy(), false);
+            itemStack.shrink(1);
+            SoundType soundtype = world.getBlockState(pos).getBlock().getSoundType(world.getBlockState(pos), world, pos, player);
+            world.playSound(player, pos, SoundEvents.BLOCK_METAL_STEP, SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+            return true;
         }
         return false;
     }
 
     public boolean placeAll(World world, EntityPlayer player, RayTraceResult result, ItemStack stack) {
         int i = 0;
-        while (i < 64) {
-            place(world, player, stack, result, RelativeBlockPos.fromSlot(i));
+        while(stack.getCount() > 0) {
+            if(!place(world, player, stack, result, RelativeBlockPos.fromSlot(i)))
+                return false;
             i++;
         }
         return true;
     }
 
     @Override
-    public boolean onPlayerRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
-        return place(world, player, stack, rayTraceResult, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
+    public boolean onPlayerLeftClick(World world, EntityPlayer player, RayTraceResult rayTrace, ItemStack stack) {
+        if(removeSlot(world,player,rayTrace))
+            return breakBlock(world,player,rayTrace);
+        return false;
     }
 
     @Override
@@ -105,11 +118,12 @@ public class TileContainer extends TileEntity implements IPileContainer {
         return breakBlock(world, player, rayTraceResult);
     }
 
-    public boolean breakBlock(World world, EntityPlayer player, RayTraceResult rayTraceResult) {
-        IBlockState state =  world.getBlockState(rayTraceResult.getBlockPos());
-        state.getBlock().onBlockHarvested(world, pos, state, player);
-        return world.setBlockState(pos, net.minecraft.init.Blocks.AIR.getDefaultState(), world.isRemote ? 11 : 3);
+    @Override
+    public boolean onPlayerRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
+        return place(world, player, stack, rayTraceResult, RelativeBlockPosUtils.getRelativeBlockPositionFromMOPHit(rayTraceResult.hitVec));
     }
+
+
     @Override
     public boolean onPlayerShiftRightClick(World world, EntityPlayer player, RayTraceResult rayTraceResult, ItemStack stack) {
         return placeAll(world, player, rayTraceResult, stack);
@@ -119,17 +133,6 @@ public class TileContainer extends TileEntity implements IPileContainer {
     public SPacketUpdateTileEntity getUpdatePacket() {
         NBTTagCompound tag = getUpdateTag();
         return new SPacketUpdateTileEntity(this.getPos(), getBlockMetadata(), tag);
-    }
-
-
-
-    public void dropItems(EntityPlayer player) {
-        if (!player.isCreative()) {
-            for (int i = 0; i < pile.getSlots(); i++) {
-                if (!pile.getStackInSlot(i).isEmpty())
-                    ItemHandlerHelper.giveItemToPlayer(player, pile.getStackInSlot(i));
-            }
-        }
     }
 
     @Override
@@ -165,8 +168,5 @@ public class TileContainer extends TileEntity implements IPileContainer {
     @Override
     public void markDirty() {
         super.markDirty();
-        world.scheduleUpdate(pos,getBlockType(),0);
-        world.markBlockRangeForRenderUpdate(pos,pos);
-        world.scheduleBlockUpdate(pos,getBlockType(),0,1);
     }
 }

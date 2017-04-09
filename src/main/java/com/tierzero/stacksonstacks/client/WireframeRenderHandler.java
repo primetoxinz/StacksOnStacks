@@ -1,6 +1,6 @@
 package com.tierzero.stacksonstacks.client;
 
-import com.tierzero.stacksonstacks.containers.TileContainer;
+import com.tierzero.stacksonstacks.containers.TilePileContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -17,7 +17,7 @@ public class WireframeRenderHandler {
 		
 		if(event.getTarget().typeOfHit == RayTraceResult.Type.BLOCK) {
 			TileEntity tileAtHitPosition = world.getTileEntity(hitBlockPosition);
-			if(tileAtHitPosition instanceof TileContainer) {
+			if(tileAtHitPosition instanceof TilePileContainer) {
 				if(TESRPile.renderWireframe(world, event.getPlayer(), tileAtHitPosition, event.getTarget().hitVec)) {
 //					event.setCanceled(true);
 				}
