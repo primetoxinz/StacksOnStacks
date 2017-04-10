@@ -43,6 +43,7 @@ public class StacksOnStacks {
 
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
 		MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());
+		NetworkWrapper.INSTANCE.init();
 	}
 	
 	@Mod.EventHandler
