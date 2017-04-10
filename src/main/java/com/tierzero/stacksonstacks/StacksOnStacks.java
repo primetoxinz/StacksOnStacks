@@ -29,7 +29,6 @@ public class StacksOnStacks {
 
 	public static final Block CONTAINER = new BlockPileContainer().setRegistryName("sos.container");
 
-
 	@Mod.EventHandler
 	public static void preInit(FMLPreInitializationEvent event) {
 
@@ -43,7 +42,7 @@ public class StacksOnStacks {
 
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
 		MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());
-		NetworkWrapper.INSTANCE.init();
+
 	}
 	
 	@Mod.EventHandler

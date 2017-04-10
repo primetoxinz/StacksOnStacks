@@ -30,7 +30,6 @@ public class TilePileContainer extends TileEntity implements IPileContainer {
 
     public TilePileContainer() {
         this.pile = new Pile(EnumRegisteredItemType.INGOT, this);
-
     }
 
     @Override
@@ -52,6 +51,7 @@ public class TilePileContainer extends TileEntity implements IPileContainer {
     public IPileContainer getNextPileContainer() {
         return null;
     }
+
 
     public boolean removeSlot(World world, EntityPlayer player, RayTraceResult rayTrace) {
         if (rayTrace != null) {
@@ -164,5 +164,7 @@ public class TilePileContainer extends TileEntity implements IPileContainer {
     @Override
     public void markDirty() {
         super.markDirty();
+        IBlockState state = world.getBlockState(pos);
+        world.notifyBlockUpdate(pos,state,state,3);
     }
 }
