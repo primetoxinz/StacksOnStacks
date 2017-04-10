@@ -38,7 +38,7 @@ public class TESRPile extends TileEntitySpecialRenderer<TilePileContainer> {
         } else {
             GlStateManager.shadeModel(GL11.GL_FLAT);
         }
-
+        setLightmapDisabled(true);
         //TODO - Make this bind the texture on each individual ingot
         this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);

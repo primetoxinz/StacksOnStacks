@@ -20,8 +20,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
@@ -129,11 +127,6 @@ public class TilePileContainer extends TileEntity implements IPileContainer {
         return placeAll(world, player, rayTraceResult, stack);
     }
 
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound tag = getUpdateTag();
-        return new SPacketUpdateTileEntity(this.getPos(), getBlockMetadata(), tag);
-    }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -148,17 +141,20 @@ public class TilePileContainer extends TileEntity implements IPileContainer {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public void onDataPacket(NetworkManager mgr, SPacketUpdateTileEntity pkt) {
-        NBTTagCompound tag = pkt.getNbtCompound();
-        readFromNBT(tag);
-        IBlockState state = getWorld().getBlockState(this.pos);
-        getWorld().notifyBlockUpdate(this.pos, state, state, 3);
+    public NBTTagCompound getUpdateTag() {
+        return writeToNBT(new NBTTagCompound());
     }
 
     @Override
-    public NBTTagCompound getUpdateTag() {
-        return writeToNBT(new NBTTagCompound());
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        NBTTagCompound nbtTag = new NBTTagCompound();
+        this.writeToNBT(nbtTag);
+        return new SPacketUpdateTileEntity(getPos(), 1, nbtTag);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
+        this.readFromNBT(packet.getNbtCompound());
     }
 
     public Pile getPile() {
