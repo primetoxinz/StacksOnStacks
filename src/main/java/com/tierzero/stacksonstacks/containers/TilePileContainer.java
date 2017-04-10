@@ -168,5 +168,7 @@ public class TilePileContainer extends TileEntity implements IPileContainer {
     @Override
     public void markDirty() {
         super.markDirty();
+        IBlockState state = world.getBlockState(pos);
+        world.notifyBlockUpdate(pos,state,state,3);
     }
 }

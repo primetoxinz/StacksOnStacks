@@ -17,22 +17,5 @@ out
 build/
 .gradle
 
-# other
-eclipse
-run
-.DS_STORE
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
-
-# Cache of project
-.gradletasknamecache
-
-# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
-# gradle/wrapper/gradle-wrapper.properties
-
-/classes/
-/gradle/
-/src/main/java/exter/substratum/
-src/main/java/exter/
-src/main/resources/assets/stacksonstacks/textures/
-src/main/resources/assets/substratum/
+build.gradle~
+build.properties~
