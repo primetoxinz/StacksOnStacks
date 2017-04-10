@@ -7,6 +7,8 @@ import com.tierzero.stacksonstacks.core.CommonProxy;
 import com.tierzero.stacksonstacks.core.ConfigHandler;
 import com.tierzero.stacksonstacks.core.LogHandler;
 import com.tierzero.stacksonstacks.lib.LibCore;
+import com.tierzero.stacksonstacks.network.NetworkHandler;
+import com.tierzero.stacksonstacks.network.PileSyncPacket;
 import com.tierzero.stacksonstacks.pile.PlacementHandler;
 import com.tierzero.stacksonstacks.registration.RegistrationHandler;
 import net.minecraft.block.Block;
@@ -17,42 +19,44 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
 
 @Mod(modid = LibCore.MOD_ID, name = LibCore.MOD_NAME, version = LibCore.VERSION, acceptedMinecraftVersions = LibCore.REQUIRED_VERSION)
 public class StacksOnStacks {
 
-	@Instance
-	public static StacksOnStacks INSTANCE;
-	
-	@SidedProxy(clientSide = LibCore.PROXY_CLIENT, serverSide = LibCore.PROXY_COMMON)
-	public static CommonProxy proxy;
+    @Instance
+    public static StacksOnStacks INSTANCE;
 
-	public static final Block CONTAINER = new BlockPileContainer().setRegistryName("sos.container");
+    @SidedProxy(clientSide = LibCore.PROXY_CLIENT, serverSide = LibCore.PROXY_COMMON)
+    public static CommonProxy proxy;
+
+    public static final Block CONTAINER = new BlockPileContainer().setRegistryName("sos.container");
 
 
-	@Mod.EventHandler
-	public static void preInit(FMLPreInitializationEvent event) {
+    @Mod.EventHandler
+    public static void preInit(FMLPreInitializationEvent event) {
 
-		LogHandler.initLogger(event.getModLog());
-		ConfigHandler.initConfig(event.getSuggestedConfigurationFile());
-		
-		proxy.preInit(event);
+        LogHandler.initLogger(event.getModLog());
+        ConfigHandler.initConfig(event.getSuggestedConfigurationFile());
 
-		GameRegistry.register(CONTAINER);
-		GameRegistry.registerTileEntity(TilePileContainer.class,"sos.tile.container");
+        proxy.preInit(event);
 
-		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
-		MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());
-	}
-	
-	@Mod.EventHandler
-	public static void init(FMLInitializationEvent event) {
+        GameRegistry.register(CONTAINER);
+        GameRegistry.registerTileEntity(TilePileContainer.class, "sos.tile.container");
 
-	}
-	
-	@Mod.EventHandler
-	public static void postInit(FMLInitializationEvent event) {
-		RegistrationHandler.loadRegistries();
-	}
-	
+        MinecraftForge.EVENT_BUS.register(new PlacementHandler());
+        MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());
+        NetworkHandler.INSTANCE.registerMessage(PileSyncPacket.PileSyncHandler.class, PileSyncPacket.class, 0, Side.CLIENT);
+    }
+
+    @Mod.EventHandler
+    public static void init(FMLInitializationEvent event) {
+
+    }
+
+    @Mod.EventHandler
+    public static void postInit(FMLInitializationEvent event) {
+        RegistrationHandler.loadRegistries();
+    }
+
 }
