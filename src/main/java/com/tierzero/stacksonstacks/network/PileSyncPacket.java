@@ -35,12 +35,11 @@ public class PileSyncPacket implements IMessage{
     }
 
 
-    public static class PileSyncHandler implements IMessageHandler<PileSyncPacket,IMessage> {
+    public class PileSyncHandler implements IMessageHandler<PileSyncPacket,IMessage> {
         @Override
         public IMessage onMessage(PileSyncPacket message, MessageContext ctx) {
             //WHAT DO I DO HERE?
-
-            return message;
+            return null;
         }
     }
 }
