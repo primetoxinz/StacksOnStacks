@@ -48,6 +48,7 @@ public class TESRPile extends TileEntitySpecialRenderer<TilePileContainer> {
         for(int slot = 0; slot < pile.getSlots(); slot++) {
             ItemStack stack = pile.getStackInSlot(slot);
             if(!stack.isEmpty()) {
+            	
                 IngotRender.renderIngotToBuffer(buffer, te.getWorld(), te.getPos(), RelativeBlockPos.fromSlot(slot),stack);
             }
         }

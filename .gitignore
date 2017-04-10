@@ -5,6 +5,7 @@ bin
 .metadata
 .classpath
 .project
+eclipse/
 
 # idea
 out
@@ -19,3 +20,6 @@ build/
 
 build.gradle~
 build.properties~
+
+.DS_Store
+run/

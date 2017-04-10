@@ -38,7 +38,7 @@ public class StacksOnStacks {
 		proxy.preInit(event);
 
 		GameRegistry.register(CONTAINER);
-		GameRegistry.registerTileEntity(TilePileContainer.class,"sos.tile.container");
+		GameRegistry.registerTileEntity(TilePileContainer.class, "sos.tile.container");
 
 		MinecraftForge.EVENT_BUS.register(new PlacementHandler());
 		MinecraftForge.EVENT_BUS.register(new WireframeRenderHandler());
